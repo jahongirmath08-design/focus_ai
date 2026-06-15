@@ -2,12 +2,13 @@ import 'dart:async';
 import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 import '../../../core/utils/duration_format.dart';
+import '../data/session_repository.dart';
 import '../domain/focus_session.dart';
 
-/// Phase 1 vaqtinchalik ekrani: bitta timestamp taymer.
-/// (Keyingi qadamlarda Riverpod + Hive + ko'p sessiya qo'shamiz.)
+/// Phase 1 ekrani: bitta timestamp taymer + Hive saqlash (xavfsiz).
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
 
@@ -16,12 +17,31 @@ class TimerScreen extends StatefulWidget {
 }
 
 class _TimerScreenState extends State<TimerScreen> {
-  // Demo maqsad: 1 daqiqa. (Keyin foydalanuvchi o'zi tanlaydigan bo'ladi.)
-  FocusSession _session = const FocusSession(goalMs: 60 * 1000);
+  static const int _demoGoalMs = 60 * 1000; // demo maqsad: 1 daqiqa
+
+  // Hive ochilgan bo'lsa — repository bor; bo'lmasa null (xotirada ishlaymiz).
+  SessionRepository? _repo;
+  late FocusSession _session;
 
   // DIQQAT: bu Timer FAQAT ekranni qayta chizish uchun. Vaqt manbai EMAS!
-  // Haqiqiy vaqt har doim FocusSession ichidagi timestamp'dan hisoblanadi.
   Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Hive.isBoxOpen('focus_session')) {
+      _repo = SessionRepository(Hive.box('focus_session'));
+      _session = _repo!.load(defaultGoalMs: _demoGoalMs);
+    } else {
+      _repo = null;
+      _session = const FocusSession(goalMs: _demoGoalMs);
+    }
+    // Agar oldin ishlab turgan bo'lsa, qayta ochilganda o'tgan vaqt
+    // runningSince'dan avtomatik to'g'ri hisoblanadi (timestamp sehri).
+    if (_session.isRunning) {
+      _startTicker();
+    }
+  }
 
   @override
   void dispose() {
@@ -33,7 +53,7 @@ class _TimerScreenState extends State<TimerScreen> {
     _ticker?.cancel();
     _ticker = Timer.periodic(
       const Duration(milliseconds: 200),
-      (_) => setState(() {}), // har 200ms da shunchaki qayta chizamiz
+      (_) => setState(() {}),
     );
   }
 
@@ -53,6 +73,7 @@ class _TimerScreenState extends State<TimerScreen> {
         _startTicker();
       }
     });
+    _repo?.save(_session); // holat o'zgardi -> saqlaymiz (agar saqlash mavjud bo'lsa)
   }
 
   void _reset() {
@@ -60,6 +81,7 @@ class _TimerScreenState extends State<TimerScreen> {
       _session = _session.reset();
       _stopTicker();
     });
+    _repo?.save(_session);
   }
 
   @override
@@ -70,6 +92,7 @@ class _TimerScreenState extends State<TimerScreen> {
     final complete = _session.isComplete(now);
     final running = _session.isRunning;
     final scheme = Theme.of(context).colorScheme;
+    final saveOn = _repo != null;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Focus AI — Taymer')),
@@ -125,6 +148,12 @@ class _TimerScreenState extends State<TimerScreen> {
                     label: const Text('Qayta'),
                   ),
                 ],
+              ),
+              const SizedBox(height: 24),
+              // Vaqtinchalik diagnostika yozuvi (saqlash ishlayaptimi?).
+              Text(
+                saveOn ? 'Saqlash: yoniq 💾' : 'Saqlash: o\'chiq',
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
               ),
             ],
           ),
