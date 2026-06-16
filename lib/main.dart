@@ -11,8 +11,8 @@ Future<void> main() async {
   // ilova baribir ochiladi (oq ekran bo'lmasligi uchun). Saqlash bo'lmasa,
   // ilova vaqtincha xotirada ishlaydi.
   try {
-    await Hive.initFlutter().timeout(const Duration(seconds: 3));
-    await Hive.openBox('focus_session').timeout(const Duration(seconds: 3));
+    await Hive.initFlutter().timeout(const Duration(seconds: 15));
+    await Hive.openBox('focus_session').timeout(const Duration(seconds: 15));
   } catch (e, st) {
     debugPrint('HIVE INIT muammosi (ilova saqlashsiz davom etadi): $e\n$st');
   }

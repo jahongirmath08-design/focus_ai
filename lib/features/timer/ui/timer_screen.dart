@@ -92,7 +92,6 @@ class _TimerScreenState extends State<TimerScreen> {
     final complete = _session.isComplete(now);
     final running = _session.isRunning;
     final scheme = Theme.of(context).colorScheme;
-    final saveOn = _repo != null;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Focus AI — Taymer')),
@@ -148,12 +147,6 @@ class _TimerScreenState extends State<TimerScreen> {
                     label: const Text('Qayta'),
                   ),
                 ],
-              ),
-              const SizedBox(height: 24),
-              // Vaqtinchalik diagnostika yozuvi (saqlash ishlayaptimi?).
-              Text(
-                saveOn ? 'Saqlash: yoniq 💾' : 'Saqlash: o\'chiq',
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
               ),
             ],
           ),
