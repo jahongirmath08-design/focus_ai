@@ -7,15 +7,15 @@ import 'package:focus_ai/main.dart';
 void main() {
   setUpAll(() async {
     // Test uchun Hive'ni vaqtinchalik papkada ishga tushiramiz.
-    final dir = Directory.systemTemp.createTempSync('focusai_test');
-    Hive.init(dir.path);
-    await Hive.openBox('focus_session');
+    Hive.init(Directory.systemTemp.createTempSync('focusai_test').path);
+    await Hive.openBox('habits');
   });
 
-  testWidgets('Taymer ekrani ochiladi: Boshlash va Qayta tugmalari bor',
+  testWidgets('Dashboard ochiladi: sarlavha va "Odat qo\'shish" tugmasi bor',
       (tester) async {
     await tester.pumpWidget(const FocusAiApp());
-    expect(find.text('Boshlash'), findsOneWidget);
-    expect(find.text('Qayta'), findsOneWidget);
+    await tester.pump();
+    expect(find.text('Focus AI'), findsOneWidget);
+    expect(find.text("Odat qo'shish"), findsOneWidget);
   });
 }
