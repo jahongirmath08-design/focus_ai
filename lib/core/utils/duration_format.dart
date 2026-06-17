@@ -1,6 +1,8 @@
 /// Millisekundlarni "MM:SS" yoki (1 soatdan oshsa) "HH:MM:SS" ko'rinishiga aylantiradi.
-String formatDuration(int milliseconds) {
-  final totalSeconds = (milliseconds < 0 ? 0 : milliseconds) ~/ 1000;
+String formatDuration(int milliseconds, {bool roundUp = false}) {
+  final ms = milliseconds < 0 ? 0 : milliseconds;
+  // roundUp=true -> qolgan vaqt uchun yuqoriga yaxlitlaymiz (o'tgan + qolgan = maqsad).
+  final totalSeconds = roundUp ? ((ms + 999) ~/ 1000) : (ms ~/ 1000);
   final hours = totalSeconds ~/ 3600;
   final minutes = (totalSeconds % 3600) ~/ 60;
   final seconds = totalSeconds % 60;

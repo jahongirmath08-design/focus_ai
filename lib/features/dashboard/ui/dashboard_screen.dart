@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/duration_format.dart';
+import '../../active_session/ui/active_session_screen.dart';
 import '../../habits/domain/habit.dart';
 import '../../habits/state/habits_notifier.dart';
 import 'add_habit_sheet.dart';
 
 /// Asosiy ekran: odatlar ro'yxati. Har biri mustaqil taymer.
+/// Kartani bosish -> Faol sessiya ekrani (signature yorug'lik yoyi).
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -23,7 +25,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // FAQAT ekranni yangilash uchun (har 0.5s). Vaqt manbai — timestamp.
     _ticker = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (mounted) setState(() {});
     });
@@ -54,6 +55,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 return _HabitCard(
                   habit: h,
                   now: now,
+                  onOpen: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ActiveSessionScreen(habitId: h.id),
+                    ),
+                  ),
                   onToggle: () => h.session.isRunning
                       ? notifier.pause(h.id)
                       : notifier.start(h.id),
@@ -104,6 +110,7 @@ class _HabitCard extends StatelessWidget {
   const _HabitCard({
     required this.habit,
     required this.now,
+    required this.onOpen,
     required this.onToggle,
     required this.onReset,
     required this.onDelete,
@@ -111,6 +118,7 @@ class _HabitCard extends StatelessWidget {
 
   final Habit habit;
   final DateTime now;
+  final VoidCallback onOpen;
   final VoidCallback onToggle;
   final VoidCallback onReset;
   final VoidCallback onDelete;
@@ -125,94 +133,105 @@ class _HabitCard extends StatelessWidget {
     final complete = s.isComplete(now);
     final running = s.isRunning;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+    return Material(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onOpen,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: color.withValues(alpha: 0.5)),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration:
+                        BoxDecoration(color: color, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(habit.name,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600)),
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (v) {
+                      if (v == 'reset') onReset();
+                      if (v == 'delete') onDelete();
+                    },
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(
+                          value: 'reset', child: Text('Qaytadan (0 ga)')),
+                      PopupMenuItem(value: 'delete', child: Text("O'chirish")),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(habit.name,
+              const SizedBox(height: 4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    formatDuration(elapsed),
                     style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w600)),
+                      fontSize: 40,
+                      fontWeight: FontWeight.w300,
+                      fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text('/ ${formatDuration(s.goalMs)}',
+                        style: TextStyle(color: scheme.onSurfaceVariant)),
+                  ),
+                ],
               ),
-              PopupMenuButton<String>(
-                onSelected: (v) {
-                  if (v == 'reset') onReset();
-                  if (v == 'delete') onDelete();
-                },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'reset', child: Text('Qaytadan (0 ga)')),
-                  PopupMenuItem(value: 'delete', child: Text("O'chirish")),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 8,
+                  backgroundColor: scheme.surfaceContainerHighest,
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    complete
+                        ? 'Bajarildi! 🎉'
+                        : '${(progress * 100).toStringAsFixed(0)}%',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: complete ? color : scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  FilledButton.icon(
+                    onPressed: onToggle,
+                    icon: Icon(running ? Icons.pause : Icons.play_arrow),
+                    label: Text(running ? 'Pauza' : 'Boshlash'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: color,
+                      foregroundColor: Colors.black,
+                    ),
+                  ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                formatDuration(elapsed),
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w300,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text('/ ${formatDuration(s.goalMs)}',
-                    style: TextStyle(color: scheme.onSurfaceVariant)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: scheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                complete ? 'Bajarildi! 🎉' : '${(progress * 100).toStringAsFixed(0)}%',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: complete ? color : scheme.onSurfaceVariant,
-                ),
-              ),
-              FilledButton.icon(
-                onPressed: onToggle,
-                icon: Icon(running ? Icons.pause : Icons.play_arrow),
-                label: Text(running ? 'Pauza' : 'Boshlash'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: color,
-                  foregroundColor: Colors.black,
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
