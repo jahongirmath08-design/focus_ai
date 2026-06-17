@@ -88,35 +88,43 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              LightArc(
-                progress: progress,
-                color: color,
-                running: running,
-                complete: complete,
-                size: 300,
-                center: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      formatDuration(elapsed),
-                      style: const TextStyle(
-                        fontSize: 54,
-                        fontWeight: FontWeight.w300,
-                        fontFeatures: [FontFeature.tabularFigures()],
+              Hero(
+                tag: 'habitArc_${widget.habitId}',
+                flightShuttleBuilder: arcFlightShuttleBuilder(
+                  progress: progress,
+                  color: color,
+                  complete: complete,
+                ),
+                child: LightArc(
+                  progress: progress,
+                  color: color,
+                  running: running,
+                  complete: complete,
+                  size: 300,
+                  center: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        formatDuration(elapsed),
+                        style: const TextStyle(
+                          fontSize: 54,
+                          fontWeight: FontWeight.w300,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      complete
-                          ? 'Bajarildi! 🎉'
-                          : 'qoldi ${formatDuration(s.remainingMs(now), roundUp: true)}',
-                      style: TextStyle(
-                        color: complete ? color : Colors.white54,
-                        fontWeight:
-                            complete ? FontWeight.w600 : FontWeight.w400,
+                      const SizedBox(height: 4),
+                      Text(
+                        complete
+                            ? 'Bajarildi! 🎉'
+                            : 'qoldi ${formatDuration(s.remainingMs(now), roundUp: true)}',
+                        style: TextStyle(
+                          color: complete ? color : Colors.white54,
+                          fontWeight:
+                              complete ? FontWeight.w600 : FontWeight.w400,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 56),
@@ -125,15 +133,24 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                 children: [
                   FilledButton.icon(
                     onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      if (running) {
-                        notifier.pause(habit.id);
+                      if (complete) {
+                        HapticFeedback.lightImpact();
+                        notifier.reset(habit.id);
                       } else {
-                        notifier.start(habit.id);
+                        HapticFeedback.mediumImpact();
+                        if (running) {
+                          notifier.pause(habit.id);
+                        } else {
+                          notifier.start(habit.id);
+                        }
                       }
                     },
-                    icon: Icon(running ? Icons.pause : Icons.play_arrow),
-                    label: Text(running ? 'Pauza' : 'Boshlash'),
+                    icon: Icon(complete
+                        ? Icons.refresh
+                        : (running ? Icons.pause : Icons.play_arrow)),
+                    label: Text(complete
+                        ? 'Qaytadan'
+                        : (running ? 'Pauza' : 'Boshlash')),
                     style: FilledButton.styleFrom(
                       backgroundColor: color,
                       foregroundColor: Colors.black,
@@ -143,15 +160,17 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                           fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      notifier.reset(habit.id);
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Qayta'),
-                  ),
+                  if (!complete) ...[
+                    const SizedBox(width: 16),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        notifier.reset(habit.id);
+                      },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Qayta'),
+                    ),
+                  ],
                 ],
               ),
             ],

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/duration_format.dart';
 import '../../active_session/ui/active_session_screen.dart';
+import '../../active_session/ui/light_arc.dart';
 import '../../habits/domain/habit.dart';
 import '../../habits/state/habits_notifier.dart';
 import 'add_habit_sheet.dart';
@@ -56,8 +57,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   habit: h,
                   now: now,
                   onOpen: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ActiveSessionScreen(habitId: h.id),
+                    PageRouteBuilder(
+                      transitionDuration: const Duration(milliseconds: 600),
+                      reverseTransitionDuration:
+                          const Duration(milliseconds: 480),
+                      pageBuilder: (_, __, ___) =>
+                          ActiveSessionScreen(habitId: h.id),
+                      transitionsBuilder: (_, anim, __, child) {
+                        // Hero yoy shu davomda silliq o'sadi; bundan tashqari butun
+                        // ekran ozgina kattalashib (scale) fade bilan kiradi —
+                        // shunday qilib harakat har doim sezilarli bo'ladi.
+                        final curved = CurvedAnimation(
+                          parent: anim,
+                          curve: Curves.easeOutCubic,
+                          reverseCurve: Curves.easeInCubic,
+                        );
+                        return FadeTransition(
+                          opacity: curved,
+                          child: ScaleTransition(
+                            scale: Tween<double>(begin: 0.85, end: 1.0)
+                                .animate(curved),
+                            child: child,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   onToggle: () => h.session.isRunning
@@ -145,89 +168,125 @@ class _HabitCard extends StatelessWidget {
             border: Border.all(color: color.withValues(alpha: 0.5)),
           ),
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration:
-                        BoxDecoration(color: color, shape: BoxShape.circle),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(habit.name,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600)),
-                  ),
-                  PopupMenuButton<String>(
-                    onSelected: (v) {
-                      if (v == 'reset') onReset();
-                      if (v == 'delete') onDelete();
-                    },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(
-                          value: 'reset', child: Text('Qaytadan (0 ga)')),
-                      PopupMenuItem(value: 'delete', child: Text("O'chirish")),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    formatDuration(elapsed),
-                    style: const TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.w300,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text('/ ${formatDuration(s.goalMs)}',
-                        style: TextStyle(color: scheme.onSurfaceVariant)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 8,
-                  backgroundColor: scheme.surfaceContainerHighest,
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
+              // SIGNATURE mini yoy — markazda % yoki ✓
+              Hero(
+                tag: 'habitArc_${habit.id}',
+                flightShuttleBuilder: arcFlightShuttleBuilder(
+                  progress: progress,
+                  color: color,
+                  complete: complete,
+                ),
+                child: MiniLightArc(
+                  progress: progress,
+                  color: color,
+                  complete: complete,
+                  size: 66,
+                  child: complete
+                      ? Icon(Icons.check_rounded, color: color, size: 24)
+                      : Text(
+                          '${(progress * 100).toStringAsFixed(0)}%',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            fontFeatures: [FontFeature.tabularFigures()],
+                          ),
+                        ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    complete
-                        ? 'Bajarildi! 🎉'
-                        : '${(progress * 100).toStringAsFixed(0)}%',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: complete ? color : scheme.onSurfaceVariant,
+              const SizedBox(width: 16),
+              // Nom + vaqt + holat
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            habit.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 17, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: PopupMenuButton<String>(
+                            padding: EdgeInsets.zero,
+                            iconSize: 20,
+                            onSelected: (v) {
+                              if (v == 'reset') onReset();
+                              if (v == 'delete') onDelete();
+                            },
+                            itemBuilder: (_) => const [
+                              PopupMenuItem(
+                                  value: 'reset',
+                                  child: Text('Qaytadan (0 ga)')),
+                              PopupMenuItem(
+                                  value: 'delete', child: Text("O'chirish")),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  FilledButton.icon(
-                    onPressed: onToggle,
-                    icon: Icon(running ? Icons.pause : Icons.play_arrow),
-                    label: Text(running ? 'Pauza' : 'Boshlash'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: color,
-                      foregroundColor: Colors.black,
+                    Text(
+                      '${formatDuration(elapsed)} / ${formatDuration(s.goalMs)}',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: scheme.onSurfaceVariant,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      complete
+                          ? 'Bajarildi! 🎉'
+                          : running
+                              ? 'Davom etmoqda…'
+                              : "To'xtatilgan",
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        color: complete || running
+                            ? color
+                            : scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Tugaganda Qaytadan (⟳), aks holda Boshlash/Pauza — dumaloq tugma
+              SizedBox(
+                width: 50,
+                height: 50,
+                child: complete
+                    ? FilledButton(
+                        onPressed: onReset,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: color.withValues(alpha: 0.18),
+                          foregroundColor: color,
+                          shape: const CircleBorder(),
+                          padding: EdgeInsets.zero,
+                          elevation: 0,
+                        ),
+                        child: const Icon(Icons.refresh),
+                      )
+                    : FilledButton(
+                        onPressed: onToggle,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: color,
+                          foregroundColor: Colors.black,
+                          shape: const CircleBorder(),
+                          padding: EdgeInsets.zero,
+                        ),
+                        child: Icon(running ? Icons.pause : Icons.play_arrow),
+                      ),
               ),
             ],
           ),

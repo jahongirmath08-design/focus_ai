@@ -270,3 +270,176 @@ class _LightArcPainter extends CustomPainter {
       o.complete != complete ||
       o.color != color;
 }
+
+/// Yengil "mini yoy" — dashboard kartalari uchun.
+/// AnimationController YO'Q (ro'yxatda ko'p karta bo'lsa ham silliq) —
+/// progress bilan statik chiziladi, ember uchi xira porlaydi.
+class MiniLightArc extends StatelessWidget {
+  const MiniLightArc({
+    super.key,
+    required this.progress,
+    required this.color,
+    required this.complete,
+    this.size = 64,
+    this.child,
+  });
+
+  final double progress; // 0..1
+  final Color color;
+  final bool complete;
+  final double size;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: Size.square(size),
+            painter: _MiniArcPainter(
+              progress: progress.clamp(0.0, 1.0),
+              color: color,
+              complete: complete,
+            ),
+          ),
+          if (child != null) child!,
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniArcPainter extends CustomPainter {
+  _MiniArcPainter({
+    required this.progress,
+    required this.color,
+    required this.complete,
+  });
+
+  final double progress;
+  final Color color;
+  final bool complete;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final stroke = size.width * 0.10;
+    final radius = (size.width - stroke) / 2 - 2;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    const start = -math.pi / 2;
+
+    final hot = Color.lerp(color, Colors.white, 0.7)!;
+    final cooled = Color.lerp(color, Colors.black, 0.45)!;
+
+    // xira iz
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..strokeCap = StrokeCap.round
+        ..color = Colors.white.withValues(alpha: 0.07),
+    );
+
+    final sweep = (complete ? 1.0 : progress) * 2 * math.pi;
+    if (sweep <= 0.0001) return;
+
+    // gradient yoy (sovigan -> qizigan)
+    final shader = SweepGradient(
+      startAngle: 0,
+      endAngle: sweep,
+      transform: const GradientRotation(start),
+      colors: [complete ? color : cooled, color, hot],
+      stops: const [0.0, 0.55, 1.0],
+      tileMode: TileMode.clamp,
+    ).createShader(rect);
+    canvas.drawArc(
+      rect,
+      start,
+      sweep,
+      false,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..strokeCap = StrokeCap.round
+        ..shader = shader,
+    );
+
+    if (!complete) {
+      // ember uch (statik porlash)
+      final tipAngle = start + sweep;
+      final tip = center + Offset(math.cos(tipAngle), math.sin(tipAngle)) * radius;
+      canvas.drawCircle(
+        tip,
+        stroke * 1.1,
+        Paint()
+          ..color = color.withValues(alpha: 0.5)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, stroke * 1.2),
+      );
+      canvas.drawCircle(
+        tip,
+        stroke * 0.5,
+        Paint()..color = Color.lerp(hot, Colors.white, 0.6)!,
+      );
+    } else {
+      // tugadi: yumshoq to'liq halqa porlashi
+      canvas.drawCircle(
+        center,
+        radius,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..color = hot.withValues(alpha: 0.18)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, stroke * 1.3),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniArcPainter o) =>
+      o.progress != progress || o.complete != complete || o.color != color;
+}
+
+/// Hero parvozida ko'rsatiladigan toza halqa — matnsiz, berilgan o'lchamga
+/// to'liq moslashadi (kichik yoydan katta yoyga silliq o'sadi).
+class ArcRing extends StatelessWidget {
+  const ArcRing({
+    super.key,
+    required this.progress,
+    required this.color,
+    required this.complete,
+  });
+
+  final double progress;
+  final Color color;
+  final bool complete;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size.infinite,
+      painter: _MiniArcPainter(
+        progress: progress.clamp(0.0, 1.0),
+        color: color,
+        complete: complete,
+      ),
+    );
+  }
+}
+
+/// Dashboard mini-yoyi va Active session katta yoyi o'rtasidagi Hero
+/// parvozi uchun umumiy "shuttle" — ikkala uchda ham shu builder ishlatiladi.
+HeroFlightShuttleBuilder arcFlightShuttleBuilder({
+  required double progress,
+  required Color color,
+  required bool complete,
+}) {
+  return (flightContext, animation, direction, fromContext, toContext) {
+    return ArcRing(progress: progress, color: color, complete: complete);
+  };
+}
