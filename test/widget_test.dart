@@ -9,6 +9,9 @@ void main() {
     // Test uchun Hive'ni vaqtinchalik papkada ishga tushiramiz.
     Hive.init(Directory.systemTemp.createTempSync('focusai_test').path);
     await Hive.openBox('habits');
+    // 'settings' box + onboarding ko'rilgan deb belgilaymiz -> to'g'ridan Dashboard.
+    final settings = await Hive.openBox('settings');
+    await settings.put('onboarding_seen', true);
   });
 
   testWidgets('Dashboard ochiladi: sarlavha va "Odat qo\'shish" tugmasi bor',
