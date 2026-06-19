@@ -61,8 +61,8 @@ class _RootGateState extends State<RootGate> {
     super.initState();
     bool seen = false;
     try {
-      seen =
-          Hive.box('settings').get('onboarding_seen', defaultValue: false) as bool;
+      seen = Hive.box('settings').get('onboarding_seen', defaultValue: false)
+          as bool;
     } catch (_) {
       // Hive ochilmagan bo'lsa — onboarding'da qamab qo'ymaymiz.
       seen = true;

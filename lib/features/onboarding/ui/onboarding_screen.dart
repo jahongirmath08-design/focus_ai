@@ -6,6 +6,8 @@ import '../../active_session/ui/light_arc.dart';
 
 /// Interaktiv onboarding — "diqqatni nurga aylantirish" metaforasini hikoya qiladi.
 /// Signature yoy (LightArc / MiniLightArc) qahramon element. Bir marta ko'rinadi.
+/// Birinchi ochilishda staggered "entrance" animatsiyasi: yoy sakrab kattalashadi,
+/// matn pastdan suzib chiqadi (premium birinchi taassurot).
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key, required this.onDone});
 
@@ -23,8 +25,10 @@ class _OnbPage {
   final Color color;
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with SingleTickerProviderStateMixin {
   final _controller = PageController();
+  late final AnimationController _entrance;
   int _index = 0;
 
   static const _pages = <_OnbPage>[
@@ -49,7 +53,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _entrance = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..forward();
+  }
+
+  @override
   void dispose() {
+    _entrance.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -92,19 +106,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           SafeArea(
             child: Column(
               children: [
-                // O'tkazib yuborish
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: AnimatedOpacity(
-                    opacity: last ? 0.0 : 1.0,
-                    duration: const Duration(milliseconds: 250),
-                    child: TextButton(
-                      onPressed: last ? null : widget.onDone,
-                      child: Text(
-                        "O'tkazib yuborish",
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+                // Yuqori panel: brend wordmark + O'tkazib yuborish.
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 8, 0),
+                  child: Row(
+                    children: [
+                      FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: _entrance,
+                          curve: const Interval(0.1, 0.6, curve: Curves.easeOut),
+                        ),
+                        child: _Wordmark(color: pageColor),
                       ),
-                    ),
+                      const Spacer(),
+                      AnimatedOpacity(
+                        opacity: last ? 0.0 : 1.0,
+                        duration: const Duration(milliseconds: 250),
+                        child: TextButton(
+                          onPressed: last ? null : widget.onDone,
+                          child: Text(
+                            "O'tkazib yuborish",
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.55),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Expanded(
@@ -119,6 +147,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       page: _pages[i],
                       index: i,
                       controller: _controller,
+                      entrance: _entrance,
                     ),
                   ),
                 ),
@@ -142,7 +171,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      child: Text(last ? "Boshlaymiz ✨" : "Keyingi"),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(last ? "Boshlaymiz" : "Keyingi"),
+                          const SizedBox(width: 8),
+                          Icon(
+                            last
+                                ? Icons.auto_awesome
+                                : Icons.arrow_forward_rounded,
+                            size: 20,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -155,22 +196,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-/// Bitta onboarding sahifasi — qahramon yoy + matn, parallaks bilan.
+/// Bitta onboarding sahifasi — qahramon yoy + matn, parallaks + entrance bilan.
 class _OnbPageView extends StatelessWidget {
   const _OnbPageView({
     required this.page,
     required this.index,
     required this.controller,
+    required this.entrance,
   });
 
   final _OnbPage page;
   final int index;
   final PageController controller;
+  final Animation<double> entrance;
+
+  /// e (0..1) ning [start..end] oralig'ida egri chiziq bo'yicha qiymat.
+  double _seg(double e, double start, double end, Curve curve) {
+    final v = ((e - start) / (end - start)).clamp(0.0, 1.0);
+    return curve.transform(v);
+  }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: controller,
+      animation: Listenable.merge([controller, entrance]),
       builder: (context, _) {
         final hasDim =
             controller.hasClients && controller.position.haveDimensions;
@@ -178,51 +227,65 @@ class _OnbPageView extends StatelessWidget {
         final offset = pageVal - index; // 0 = markazda
         final t = offset.clamp(-1.0, 1.0);
         final centered = (1 - t.abs()).clamp(0.0, 1.0);
+        final e = entrance.value;
+        // Yoy "to'lishi" — sahifa kelganda yoy 0 dan maqsadgacha quyiladi (signature metafora).
+        final fill = _seg(e, 0.08, 0.9, Curves.easeOutCubic) * centered;
+
+        // Entrance: yoy pastdan ko'tarilib, sakrab kattalashadi; matn suzib chiqadi.
+        final heroScale =
+            (0.58 + 0.42 * _seg(e, 0.0, 0.60, Curves.easeOutBack)) *
+                (0.92 + 0.08 * centered);
+        final heroRise = (1 - _seg(e, 0.0, 0.55, Curves.easeOutCubic)) * 40;
+        final heroOpacity =
+            _seg(e, 0.0, 0.42, Curves.easeOut) * (0.20 + 0.80 * centered);
+        final titleIn = _seg(e, 0.30, 0.80, Curves.easeOut);
+        final bodyIn = _seg(e, 0.48, 1.0, Curves.easeOut);
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Qahramon yoy — parallaks (sekinroq suriladi) + fade/scale.
               Transform.translate(
-                offset: Offset(-t * 64, 0),
+                offset: Offset(-t * 60, heroRise),
                 child: Transform.scale(
-                  scale: 0.86 + 0.14 * centered,
+                  scale: heroScale,
                   child: Opacity(
-                    opacity: 0.30 + 0.70 * centered,
-                    child: SizedBox(
-                      height: 250,
-                      child: Center(child: _hero()),
-                    ),
+                    opacity: heroOpacity.clamp(0.0, 1.0),
+                    child: SizedBox(height: 250, child: Center(child: _hero(fill))),
                   ),
                 ),
               ),
               const SizedBox(height: 44),
-              Opacity(
-                opacity: centered,
-                child: Column(
-                  children: [
-                    Text(
-                      page.title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w700,
-                        height: 1.2,
-                      ),
+              Transform.translate(
+                offset: Offset(0, (1 - titleIn) * 42),
+                child: Opacity(
+                  opacity: (titleIn * centered).clamp(0.0, 1.0),
+                  child: Text(
+                    page.title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
                     ),
-                    const SizedBox(height: 14),
-                    Text(
-                      page.body,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 15.5,
-                        height: 1.5,
-                        color: Colors.white.withValues(alpha: 0.72),
-                      ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Transform.translate(
+                offset: Offset(0, (1 - bodyIn) * 42),
+                child: Opacity(
+                  opacity: (bodyIn * centered).clamp(0.0, 1.0),
+                  child: Text(
+                    page.body,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15.5,
+                      height: 1.5,
+                      color: Colors.white.withValues(alpha: 0.72),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -232,24 +295,25 @@ class _OnbPageView extends StatelessWidget {
     );
   }
 
-  Widget _hero() {
-    // Sahifa 1 (index 1) — ko'p odat: uchta mini yoy.
+  Widget _hero(double fill) {
+    final f = fill.clamp(0.0, 1.0);
+    // Sahifa 1 (index 1) — ko'p odat: uchta mini yoy (kelganda to'ladi, % sanaydi).
     if (index == 1) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _mini(AppColors.habitColors[1], 0.45, 86),
+          _mini(AppColors.habitColors[1], 0.45 * f, 86),
           const SizedBox(width: 16),
-          _mini(AppColors.habitColors[2], 0.72, 116),
+          _mini(AppColors.habitColors[2], 0.72 * f, 116),
           const SizedBox(width: 16),
-          _mini(AppColors.habitColors[3], 0.30, 86),
+          _mini(AppColors.habitColors[3], 0.30 * f, 86),
         ],
       );
     }
-    // Sahifa 0 va 2 — bitta katta signature yoy.
+    // Sahifa 0 va 2 — bitta katta signature yoy (0 dan maqsadgacha quyiladi).
     return LightArc(
-      progress: index == 0 ? 0.68 : 0.9,
+      progress: (index == 0 ? 0.68 : 0.9) * f,
       color: page.color,
       running: true,
       complete: false,
@@ -267,6 +331,48 @@ class _OnbPageView extends StatelessWidget {
         '${(p * 100).round()}%',
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
       ),
+    );
+  }
+}
+
+/// Brend wordmark — porlayotgan nuqta (sahifa rangida) + "FOCUS AI".
+class _Wordmark extends StatelessWidget {
+  const _Wordmark({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          width: 9,
+          height: 9,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color,
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.7),
+                blurRadius: 10,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 9),
+        Text(
+          "FOCUS AI",
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 2.5,
+            color: Colors.white.withValues(alpha: 0.85),
+          ),
+        ),
+      ],
     );
   }
 }
