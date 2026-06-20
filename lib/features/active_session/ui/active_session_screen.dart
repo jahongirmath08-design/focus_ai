@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/state/app_settings.dart';
 import '../../../core/utils/duration_format.dart';
 import '../../habits/state/habits_notifier.dart';
 import 'light_arc.dart';
@@ -41,11 +42,12 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ref.watch(l10nProvider);
     final habits = ref.watch(habitsProvider);
     final notifier = ref.read(habitsProvider.notifier);
     final matches = habits.where((h) => h.id == widget.habitId);
     if (matches.isEmpty) {
-      return const Scaffold(body: Center(child: Text('Odat topilmadi')));
+      return Scaffold(body: Center(child: Text(t.habitNotFound)));
     }
     final habit = matches.first;
     final color = Color(habit.colorValue);
@@ -69,7 +71,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(habit.name),
+        title: Text(habit.emoji.isEmpty
+            ? habit.name
+            : '${habit.emoji} ${habit.name}'),
       ),
       // Ambient "o'choq" foni — progress bilan qizийdi.
       body: AnimatedContainer(
@@ -115,8 +119,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                       const SizedBox(height: 4),
                       Text(
                         complete
-                            ? 'Bajarildi! 🎉'
-                            : 'qoldi ${formatDuration(s.remainingMs(now), roundUp: true)}',
+                            ? t.statusDone
+                            : t.remaining(formatDuration(s.remainingMs(now),
+                                roundUp: true)),
                         style: TextStyle(
                           color: complete ? color : Colors.white54,
                           fontWeight:
@@ -149,8 +154,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                         ? Icons.refresh
                         : (running ? Icons.pause : Icons.play_arrow)),
                     label: Text(complete
-                        ? 'Qaytadan'
-                        : (running ? 'Pauza' : 'Boshlash')),
+                        ? t.restart
+                        : (running ? t.pause : t.start)),
                     style: FilledButton.styleFrom(
                       backgroundColor: color,
                       foregroundColor: Colors.black,
@@ -168,7 +173,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                         notifier.reset(habit.id);
                       },
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Qayta'),
+                      label: Text(t.resetShort),
                     ),
                   ],
                 ],

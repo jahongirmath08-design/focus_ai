@@ -27,6 +27,7 @@ class HabitsNotifier extends Notifier<List<Habit>> {
     required String name,
     required int goalMs,
     required int colorValue,
+    String emoji = '',
   }) {
     final now = DateTime.now();
     final habit = Habit(
@@ -34,6 +35,7 @@ class HabitsNotifier extends Notifier<List<Habit>> {
       name: name,
       colorValue: colorValue,
       createdAt: now.millisecondsSinceEpoch,
+      emoji: emoji,
       session: FocusSession(goalMs: goalMs),
     );
     state = [...state, habit];

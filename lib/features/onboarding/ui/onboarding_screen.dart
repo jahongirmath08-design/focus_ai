@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/l10n.dart';
+import '../../../core/state/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../active_session/ui/light_arc.dart';
 
@@ -8,14 +11,14 @@ import '../../active_session/ui/light_arc.dart';
 /// Signature yoy (LightArc / MiniLightArc) qahramon element. Bir marta ko'rinadi.
 /// Birinchi ochilishda staggered "entrance" animatsiyasi: yoy sakrab kattalashadi,
 /// matn pastdan suzib chiqadi (premium birinchi taassurot).
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key, required this.onDone});
 
   /// Onboarding tugaganda (Skip yoki Boshlaymiz) chaqiriladi.
   final VoidCallback onDone;
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnbPage {
@@ -25,32 +28,23 @@ class _OnbPage {
   final Color color;
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen>
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     with SingleTickerProviderStateMixin {
   final _controller = PageController();
   late final AnimationController _entrance;
   int _index = 0;
 
-  static const _pages = <_OnbPage>[
-    _OnbPage(
-      title: "Diqqatni nurga aylantir",
-      body:
-          "Har bir diqqat daqiqasi yoyga quyma cho'g'dek quyiladi. Maqsadingga yetganda — u butunlay yonadi.",
-      color: Color(0xFFFFD86E), // amber
-    ),
-    _OnbPage(
-      title: "Har bir odat — o'z olovi",
-      body:
-          "Bir nechta odatni bir vaqtda yurit. Har biri mustaqil yonadi va biri ikkinchisiga xalal bermaydi.",
-      color: Color(0xFF00D2D3), // siyan
-    ),
-    _OnbPage(
-      title: "Vaqting yo'qolmaydi",
-      body:
-          "Ilovani yopsang ham, taymer aniq vaqt bo'yicha davom etadi. Hech narsa o'chmaydi.",
-      color: Color(0xFF55EFC4), // yashil
-    ),
+  static const _colors = <Color>[
+    Color(0xFFFFD86E), // amber
+    Color(0xFF00D2D3), // siyan
+    Color(0xFF55EFC4), // yashil
   ];
+
+  List<_OnbPage> _buildPages(L10n t) => [
+        _OnbPage(title: t.onb1Title, body: t.onb1Body, color: _colors[0]),
+        _OnbPage(title: t.onb2Title, body: t.onb2Body, color: _colors[1]),
+        _OnbPage(title: t.onb3Title, body: t.onb3Body, color: _colors[2]),
+      ];
 
   @override
   void initState() {
@@ -69,7 +63,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   void _next() {
-    if (_index < _pages.length - 1) {
+    if (_index < _colors.length - 1) {
       HapticFeedback.lightImpact();
       _controller.nextPage(
         duration: const Duration(milliseconds: 420),
@@ -83,8 +77,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
-    final last = _index == _pages.length - 1;
-    final pageColor = _pages[_index].color;
+    final t = ref.watch(l10nProvider);
+    final pages = _buildPages(t);
+    final last = _index == pages.length - 1;
+    final pageColor = pages[_index].color;
 
     return Scaffold(
       body: Stack(
@@ -125,7 +121,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         child: TextButton(
                           onPressed: last ? null : widget.onDone,
                           child: Text(
-                            "O'tkazib yuborish",
+                            t.onbSkip,
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.55),
                             ),
@@ -142,16 +138,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       HapticFeedback.selectionClick();
                       setState(() => _index = i);
                     },
-                    itemCount: _pages.length,
+                    itemCount: pages.length,
                     itemBuilder: (_, i) => _OnbPageView(
-                      page: _pages[i],
+                      page: pages[i],
                       index: i,
                       controller: _controller,
                       entrance: _entrance,
                     ),
                   ),
                 ),
-                _Dots(count: _pages.length, index: _index, color: pageColor),
+                _Dots(count: pages.length, index: _index, color: pageColor),
                 const SizedBox(height: 28),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
@@ -174,7 +170,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(last ? "Boshlaymiz" : "Keyingi"),
+                          Text(last ? t.onbStart : t.onbNext),
                           const SizedBox(width: 8),
                           Icon(
                             last

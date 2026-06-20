@@ -4,6 +4,8 @@ import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/l10n/l10n.dart';
+import '../../../core/state/app_settings.dart';
 import '../../../core/utils/duration_format.dart';
 import '../../active_session/ui/active_session_screen.dart';
 import '../../active_session/ui/light_arc.dart';
@@ -42,66 +44,184 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final habits = ref.watch(habitsProvider);
     final notifier = ref.read(habitsProvider.notifier);
     final now = DateTime.now();
+    final t = ref.watch(l10nProvider);
+    final userName = ref.watch(userNameProvider);
+    final userEmoji = ref.watch(userEmojiProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Focus AI'), centerTitle: false),
-      body: habits.isEmpty
-          ? const _EmptyState()
-          : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-              itemCount: habits.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, i) {
-                final h = habits[i];
-                return _HabitCard(
-                  habit: h,
-                  now: now,
-                  onOpen: () => Navigator.of(context).push(
-                    PageRouteBuilder(
-                      transitionDuration: const Duration(milliseconds: 600),
-                      reverseTransitionDuration:
-                          const Duration(milliseconds: 480),
-                      pageBuilder: (_, __, ___) =>
-                          ActiveSessionScreen(habitId: h.id),
-                      transitionsBuilder: (_, anim, __, child) {
-                        // Hero yoy shu davomda silliq o'sadi; bundan tashqari butun
-                        // ekran ozgina kattalashib (scale) fade bilan kiradi —
-                        // shunday qilib harakat har doim sezilarli bo'ladi.
-                        final curved = CurvedAnimation(
-                          parent: anim,
-                          curve: Curves.easeOutCubic,
-                          reverseCurve: Curves.easeInCubic,
-                        );
-                        return FadeTransition(
-                          opacity: curved,
-                          child: ScaleTransition(
-                            scale: Tween<double>(begin: 0.85, end: 1.0)
-                                .animate(curved),
-                            child: child,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _DashboardHeader(
+                habits: habits,
+                now: now,
+                t: t,
+                userName: userName,
+                userEmoji: userEmoji),
+            Expanded(
+              child: habits.isEmpty
+                  ? _EmptyState(t: t)
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+                      itemCount: habits.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (_, i) {
+                        final h = habits[i];
+                        return _HabitCard(
+                          habit: h,
+                          now: now,
+                          t: t,
+                          onOpen: () => Navigator.of(context).push(
+                            PageRouteBuilder(
+                              transitionDuration:
+                                  const Duration(milliseconds: 600),
+                              reverseTransitionDuration:
+                                  const Duration(milliseconds: 480),
+                              pageBuilder: (_, __, ___) =>
+                                  ActiveSessionScreen(habitId: h.id),
+                              transitionsBuilder: (_, anim, __, child) {
+                                // Hero yoy silliq o'sadi; bundan tashqari butun
+                                // ekran ozgina kattalashib (scale) fade bilan kiradi.
+                                final curved = CurvedAnimation(
+                                  parent: anim,
+                                  curve: Curves.easeOutCubic,
+                                  reverseCurve: Curves.easeInCubic,
+                                );
+                                return FadeTransition(
+                                  opacity: curved,
+                                  child: ScaleTransition(
+                                    scale: Tween<double>(begin: 0.85, end: 1.0)
+                                        .animate(curved),
+                                    child: child,
+                                  ),
+                                );
+                              },
+                            ),
                           ),
+                          onToggle: () => h.session.isRunning
+                              ? notifier.pause(h.id)
+                              : notifier.start(h.id),
+                          onReset: () => notifier.reset(h.id),
+                          onDelete: () => notifier.delete(h.id),
                         );
                       },
                     ),
-                  ),
-                  onToggle: () => h.session.isRunning
-                      ? notifier.pause(h.id)
-                      : notifier.start(h.id),
-                  onReset: () => notifier.reset(h.id),
-                  onDelete: () => notifier.delete(h.id),
-                );
-              },
             ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showAddHabitSheet(context),
         icon: const Icon(Icons.add),
-        label: const Text("Odat qo'shish"),
+        label: Text(t.addHabit),
+      ),
+    );
+  }
+}
+
+class _DashboardHeader extends StatelessWidget {
+  const _DashboardHeader({
+    required this.habits,
+    required this.now,
+    required this.t,
+    required this.userName,
+    required this.userEmoji,
+  });
+
+  final List<Habit> habits;
+  final DateTime now;
+  final L10n t;
+  final String userName;
+  final String userEmoji;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // Har bir odat soniyaga yaxlitlanib qo'shiladi -> jami kartalardagi yig'indiga teng.
+    final totalElapsed = habits.fold<int>(
+        0, (s, h) => s + (h.session.elapsedMs(now) ~/ 1000) * 1000);
+    final active = habits
+        .where((h) => h.session.isRunning && !h.session.isComplete(now))
+        .length;
+    final done = habits.where((h) => h.session.isComplete(now)).length;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$userEmoji ${t.greetingWithName(now.hour, userName)}',
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            t.longDate(now),
+            style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _chip(context, Icons.bolt_rounded, formatDuration(totalElapsed),
+                  t.totalFocus, scheme.primary),
+              const SizedBox(width: 10),
+              _chip(context, Icons.play_arrow_rounded, '$active', t.activeLabel,
+                  const Color(0xFF00D2D3)),
+              const SizedBox(width: 10),
+              _chip(context, Icons.check_rounded, '$done', t.completedLabel,
+                  const Color(0xFF55EFC4)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(BuildContext context, IconData icon, String value, String label,
+      Color color) {
+    final scheme = Theme.of(context).colorScheme;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.30)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            ),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.t});
+
+  final L10n t;
 
   @override
   Widget build(BuildContext context) {
@@ -114,11 +234,10 @@ class _EmptyState extends StatelessWidget {
           children: [
             Icon(Icons.hourglass_empty, size: 72, color: scheme.primary),
             const SizedBox(height: 16),
-            Text("Hali odat yo'q",
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(t.emptyTitle, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Pastdagi "Odat qo\'shish" tugmasi bilan birinchi odatingizni qo\'shing.',
+              t.emptyBody,
               textAlign: TextAlign.center,
               style: TextStyle(color: scheme.onSurfaceVariant),
             ),
@@ -133,6 +252,7 @@ class _HabitCard extends StatelessWidget {
   const _HabitCard({
     required this.habit,
     required this.now,
+    required this.t,
     required this.onOpen,
     required this.onToggle,
     required this.onReset,
@@ -141,6 +261,7 @@ class _HabitCard extends StatelessWidget {
 
   final Habit habit;
   final DateTime now;
+  final L10n t;
   final VoidCallback onOpen;
   final VoidCallback onToggle;
   final VoidCallback onReset;
@@ -206,7 +327,9 @@ class _HabitCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            habit.name,
+                            habit.emoji.isEmpty
+                                ? habit.name
+                                : '${habit.emoji} ${habit.name}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -223,12 +346,11 @@ class _HabitCard extends StatelessWidget {
                               if (v == 'reset') onReset();
                               if (v == 'delete') onDelete();
                             },
-                            itemBuilder: (_) => const [
+                            itemBuilder: (_) => [
                               PopupMenuItem(
-                                  value: 'reset',
-                                  child: Text('Qaytadan (0 ga)')),
+                                  value: 'reset', child: Text(t.menuReset)),
                               PopupMenuItem(
-                                  value: 'delete', child: Text("O'chirish")),
+                                  value: 'delete', child: Text(t.menuDelete)),
                             ],
                           ),
                         ),
@@ -245,10 +367,10 @@ class _HabitCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       complete
-                          ? 'Bajarildi! 🎉'
+                          ? t.statusDone
                           : running
-                              ? 'Davom etmoqda…'
-                              : "To'xtatilgan",
+                              ? t.statusRunning
+                              : t.statusPaused,
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w500,

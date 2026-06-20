@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 import 'core/theme/app_colors.dart';
-import 'features/dashboard/ui/dashboard_screen.dart';
+import 'features/home/ui/home_shell.dart';
 import 'features/onboarding/ui/onboarding_screen.dart';
 
 Future<void> main() async {
@@ -87,7 +87,7 @@ class _RootGateState extends State<RootGate> {
               key: const ValueKey('onboarding'),
               onDone: _completeOnboarding,
             )
-          : const DashboardScreen(key: ValueKey('dashboard')),
+          : const HomeShell(key: ValueKey('home')),
     );
   }
 }
