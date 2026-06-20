@@ -83,6 +83,18 @@ class FocusSession {
   /// Nolga qaytarish (maqsad saqlanadi).
   FocusSession reset() => FocusSession(goalMs: goalMs);
 
+  /// Maqsadga yetganda to'xtatish — to'plangan vaqt aynan maqsadga tenglashadi
+  /// (oshmaydi), taymer to'xtaydi. "Maqsaddan oshmaslik" qoidasini ma'lumot
+  /// darajasida ham ta'minlaydi.
+  FocusSession settle() {
+    if (goalMs <= 0) return this;
+    return FocusSession(
+      accumulatedMs: goalMs,
+      runningSince: null,
+      goalMs: goalMs,
+    );
+  }
+
   /// Saqlash uchun (keyin Hive bilan ishlatamiz).
   Map<String, dynamic> toMap() => {
         'accumulatedMs': accumulatedMs,

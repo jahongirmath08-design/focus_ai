@@ -22,29 +22,72 @@ class HabitsNotifier extends Notifier<List<Habit>> {
     }
     if (Hive.isBoxOpen('habits')) {
       _repo = HabitsRepository(Hive.box('habits'));
-      final habits = _repo!.loadAll();
-      _seedHistoryIfNeeded(habits);
-      return habits;
+      return _migrate(_repo!.loadAll());
     }
     _repo = null;
     return [];
   }
 
-  /// Bir martalik: tarix bo'sh bo'lsa, mavjud diqqatni bugunga ko'chiramiz —
-  /// shunda statistika darhol mazmunli bo'ladi (keyin aniq kunlik yoziladi).
-  void _seedHistoryIfNeeded(List<Habit> habits) {
-    final hist = _history;
-    if (hist == null) return;
+  /// Bir martalik tuzatish (v2): maqsaddan oshib ketgan to'plangan vaqtni
+  /// maqsadga chegaralaymiz va focus-tarixni qaytadan (chegaralangan) seed qilamiz.
+  List<Habit> _migrate(List<Habit> habits) {
     try {
       final settings = Hive.box('settings');
-      if (settings.get('history_seeded', defaultValue: false) == true) return;
-      final now = DateTime.now();
+      if (settings.get('history_v2', defaultValue: false) == true) return habits;
+
+      // 1) Maqsaddan oshgan vaqtni maqsadga tenglashtiramiz.
+      final fixed = <Habit>[];
       for (final h in habits) {
-        final ms = h.session.accumulatedMs;
-        if (ms > 0) hist.log(habitId: h.id, deltaMs: ms, at: now);
+        final s = h.session;
+        if (s.goalMs > 0 && s.accumulatedMs > s.goalMs) {
+          final f = h.copyWith(session: s.settle());
+          _repo?.save(f);
+          fixed.add(f);
+        } else {
+          fixed.add(h);
+        }
       }
-      settings.put('history_seeded', true);
-    } catch (_) {}
+
+      // 2) Tarixni qaytadan, chegaralangan holda seed qilamiz.
+      final hist = _history;
+      if (hist != null && Hive.isBoxOpen('history')) {
+        Hive.box('history').clear();
+        final now = DateTime.now();
+        for (final h in fixed) {
+          final ms = h.session.accumulatedMs;
+          if (ms > 0) hist.log(habitId: h.id, deltaMs: ms, at: now);
+        }
+      }
+
+      settings.put('history_v2', true);
+      return fixed;
+    } catch (_) {
+      return habits;
+    }
+  }
+
+  /// Maqsadga yetgan (ishlab turgan yoki oshib ketgan) odatlarni to'xtatadi —
+  /// taymer aniq maqsadda to'xtaydi. UI tikeridan davriy chaqiriladi.
+  void settleCompleted() {
+    final now = DateTime.now();
+    var changed = false;
+    final next = <Habit>[];
+    for (final h in state) {
+      final s = h.session;
+      final over = s.goalMs > 0 && s.rawElapsedMs(now) >= s.goalMs;
+      final needs = over && (s.isRunning || s.accumulatedMs > s.goalMs);
+      if (needs) {
+        final delta = s.goalMs - s.accumulatedMs;
+        if (delta > 0) _history?.log(habitId: h.id, deltaMs: delta, at: now);
+        final settled = h.copyWith(session: s.settle());
+        _repo?.save(settled);
+        next.add(settled);
+        changed = true;
+      } else {
+        next.add(h);
+      }
+    }
+    if (changed) state = next;
   }
 
   void addHabit({

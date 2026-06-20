@@ -29,7 +29,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   void initState() {
     super.initState();
     _ticker = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      if (mounted) setState(() {});
+      if (mounted) {
+        // Maqsadga yetgan odatlarni aniq maqsadda to'xtatamiz (oshmasin).
+        ref.read(habitsProvider.notifier).settleCompleted();
+        setState(() {});
+      }
     });
   }
 
