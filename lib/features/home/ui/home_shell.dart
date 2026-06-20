@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/state/app_settings.dart';
 import '../../dashboard/ui/dashboard_screen.dart';
+import '../../pro/ui/pro_screen.dart';
 import '../../profile/ui/profile_screen.dart';
 import '../../statistics/ui/statistics_screen.dart';
 
@@ -21,6 +22,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   static const _tabs = <Widget>[
     DashboardScreen(),
     StatisticsScreen(),
+    ProScreen(),
     ProfileScreen(),
   ];
 
@@ -42,6 +44,11 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             icon: const Icon(Icons.bar_chart_outlined),
             selectedIcon: const Icon(Icons.bar_chart_rounded),
             label: t.tabStats,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.auto_awesome_outlined),
+            selectedIcon: const Icon(Icons.auto_awesome),
+            label: t.tabPro,
           ),
           NavigationDestination(
             icon: const Icon(Icons.person_outline_rounded),

@@ -246,4 +246,193 @@ class L10n {
   String get colorLabel => _p('Rang', 'Color', 'Цвет');
   String get add => _p("Qo'shish", 'Add', 'Добавить');
   String get customMinutes => _p('Boshqa', 'Custom', 'Другое');
+
+  // ---------- Pro bo'lim ----------
+  String get tabPro => _p('Pro', 'Pro', 'Pro');
+  String get proTitle => 'Focus AI Pro';
+  String get proSubtitle => _p(
+    'Diqqatingni keyingi bosqichga olib chiqamiz',
+    'Take your focus to the next level',
+    'Выведи фокус на новый уровень',
+  );
+  String get proCoachSection => _p('AI-murabbiy', 'AI Coach', 'AI-наставник');
+  String get proOnlineSection =>
+      _p('Online imkoniyatlar', 'Online features', 'Онлайн-возможности');
+  String get proOfflineBadge =>
+      _p('Offline ishlaydi', 'Works offline', 'Работает офлайн');
+  String get proLiveBadge => _p('Jonli', 'Live', 'Живой');
+  String get proNeedsInternet =>
+      _p('Internet kerak', 'Needs internet', 'Нужен интернет');
+  String get proSoon => _p('Tez orada', 'Coming soon', 'Скоро');
+
+  String get proAiChatTitle =>
+      _p('Murabbiy bilan suhbat', 'Chat with your coach', 'Чат с наставником');
+  String get proAiChatBody => _p(
+    'Diqqat va odatlaring haqida jonli murabbiy bilan suhbatlash.',
+    'Chat with a live coach about your focus and habits.',
+    'Общайся с живым наставником о фокусе и привычках.',
+  );
+  String get proAiAnalysisTitle => _p(
+    'Aqlli statistika tahlili',
+    'Smart insights',
+    'Умный анализ статистики',
+  );
+  String get proAiAnalysisBody => _p(
+    "Sun'iy intellekt diqqat namunalaringni chuqur tahlil qiladi.",
+    'Smart, deep analysis of your focus patterns.',
+    'Глубокий умный анализ твоих шаблонов фокуса.',
+  );
+  String get proCloudTitle => _p(
+    'Bulutli zaxira & sinxron',
+    'Cloud backup & sync',
+    'Облако и синхронизация',
+  );
+  String get proCloudBody => _p(
+    "Ma'lumotlaring bulutda saqlanadi, har qurilmada ochiladi.",
+    'Your data is backed up and synced across devices.',
+    'Данные в облаке и синхронизируются на устройствах.',
+  );
+  String get proFriendsTitle =>
+      _p("Do'stlar challenge'i", 'Friends challenge', 'Челлендж с друзьями');
+  String get proFriendsBody => _p(
+    "Do'stlaring bilan musobaqalash va reyting.",
+    'Compete with friends on a leaderboard.',
+    'Соревнуйся с друзьями в рейтинге.',
+  );
+
+  // ---------- AI-murabbiy ----------
+  String humanDuration(int seconds) {
+    final h = seconds ~/ 3600;
+    final m = (seconds % 3600) ~/ 60;
+    if (h > 0 && m > 0) {
+      return _p('$h soat $m daqiqa', '${h}h ${m}m', '$h ч $m мин');
+    }
+    if (h > 0) return _p('$h soat', '${h}h', '$h ч');
+    if (m > 0) return _p('$m daqiqa', '${m}m', '$m мин');
+    return _p('$seconds soniya', '${seconds}s', '$seconds сек');
+  }
+
+  String get coachTitle => _p('Bugungi tahlil', "Today's read", 'Анализ дня');
+
+  String coachHeadlineGood(String name) => name.isEmpty
+      ? _p("Zo'r ketyapsan! 🔥", "You're on fire! 🔥", 'Ты в ударе! 🔥')
+      : _p(
+          "Zo'r ketyapsan, $name! 🔥",
+          "You're on fire, $name! 🔥",
+          'Ты в ударе, $name! 🔥',
+        );
+  String coachHeadlinePush(String name) => name.isEmpty
+      ? _p(
+          'Bugun boshlasak-chi? 💪',
+          'Shall we start today? 💪',
+          'Начнём сегодня? 💪',
+        )
+      : _p(
+          'Bugun boshlasak-chi, $name? 💪',
+          'Shall we start today, $name? 💪',
+          'Начнём сегодня, $name? 💪',
+        );
+  String coachHeadlineNeutral(String name) => name.isEmpty
+      ? _p('Davom etamiz 🌱', "Let's keep going 🌱", 'Продолжаем 🌱')
+      : _p(
+          'Davom etamiz, $name 🌱',
+          'Keep going, $name 🌱',
+          'Продолжаем, $name 🌱',
+        );
+  String get coachHeadlineEmpty => _p(
+    'Birinchi odatdan boshlaymiz',
+    'Start with your first habit',
+    'Начни с первой привычки',
+  );
+
+  String get coachSubGood => _p(
+    "Bugungi sur'atingni ushlab tur.",
+    'Hold this pace today.',
+    'Удержи этот темп сегодня.',
+  );
+  String get coachSubPush => _p(
+    'Kichik qadam ham — qadam.',
+    'A small step is still a step.',
+    'Маленький шаг — тоже шаг.',
+  );
+  String get coachSubNeutral =>
+      _p('Sekin, lekin barqaror.', 'Slow but steady.', 'Медленно, но верно.');
+  String get coachSubEmpty => _p(
+    "Bugun sahifasidan odat qo'sh.",
+    'Add a habit on the Today tab.',
+    'Добавь привычку на вкладке «Сегодня».',
+  );
+
+  String get coachTodayVsAvgTitle =>
+      _p("Bugun vs o'rtacha", 'Today vs average', 'Сегодня vs среднее');
+  String coachTodayUp(int pct) => _p(
+    "O'rtacha kunlikdan $pct% yuqori. Ajoyib!",
+    '$pct% above your daily average. Great!',
+    'На $pct% выше среднего. Отлично!',
+  );
+  String coachTodayDown(int pct) => _p(
+    "O'rtacha kunlikdan $pct% past. Yana biroz!",
+    '$pct% below your daily average. A bit more!',
+    'На $pct% ниже среднего. Ещё немного!',
+  );
+  String get coachTodayFlat => _p(
+    "Aynan o'rtacha darajadasan.",
+    'Right at your average.',
+    'Точно на уровне среднего.',
+  );
+
+  String get coachStrongestTitle =>
+      _p('Bu hafta yetakchi', "This week's leader", 'Лидер недели');
+  String coachStrongestBody(String habit, String time) => _p(
+    "$habit — $time. Eng ko'p diqqat shunga ketdi.",
+    '$habit — $time. Your top focus.',
+    '$habit — $time. Больше всего фокуса.',
+  );
+
+  String get coachConsistencyTitle =>
+      _p('Izchillik', 'Consistency', 'Постоянство');
+  String coachConsistencyBody(int days) => _p(
+    "Oxirgi 7 kunda $days kun shug'ullanding.",
+    'You showed up $days of the last 7 days.',
+    'Ты занимался $days из 7 дней.',
+  );
+
+  String get coachCompletionTitle =>
+      _p('Bugungi yakun', 'Completed today', 'Выполнено сегодня');
+  String coachCompletionBody(int done, int total) => _p(
+    '$total odatdan $done tasi yakunlandi.',
+    '$done of $total habits done.',
+    '$done из $total привычек выполнено.',
+  );
+
+  String get coachTipTitle => _p('Maslahat', 'Tip', 'Совет');
+  List<String> get coachTips => switch (lang) {
+    AppLanguage.uz => const [
+      "Telefonni \"ekran pastga\" qo'yib, Chuqur diqqatni sina.",
+      'Diqqat 25 daqiqa + dam 5 daqiqa — Pomodoro ritmi.',
+      "Bitta odatga to'liq berilish ikkitasiga yarim qarashdan yaxshi.",
+      "Eng og'ir ishni ertalab, kuching to'la paytda boshla.",
+      "Kichik maqsad qo'y: 1 daqiqa ham hisoblanadi.",
+      'Har kuni bir xil vaqtda boshlasang, odat mustahkamlanadi.',
+      "Dam olish ham reja: charchaganda to'xtashni bil.",
+    ],
+    AppLanguage.en => const [
+      'Try Deep Focus — place your phone face down.',
+      '25 min focus + 5 min break — the Pomodoro rhythm.',
+      'Full attention on one habit beats half on two.',
+      'Start the hardest task in the morning, at full energy.',
+      'Set a tiny goal: even 1 minute counts.',
+      'Start at the same time daily to lock in the habit.',
+      'Rest is part of the plan: know when to stop.',
+    ],
+    AppLanguage.ru => const [
+      'Попробуй «Глубокий фокус» — положи телефон экраном вниз.',
+      '25 мин фокуса + 5 мин отдыха — ритм Помодоро.',
+      'Полное внимание к одной привычке лучше половины к двум.',
+      'Начни самое сложное утром, на полной энергии.',
+      'Поставь маленькую цель: даже 1 минута важна.',
+      'Начинай в одно время каждый день — привычка закрепится.',
+      'Отдых — часть плана: знай, когда остановиться.',
+    ],
+  };
 }

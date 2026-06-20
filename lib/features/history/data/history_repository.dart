@@ -44,4 +44,35 @@ class HistoryRepository {
     }
     return out;
   }
+
+  /// Oxirgi [days] kun ichidagi jami diqqat (soniya) — barcha odatlar bo'yicha.
+  int totalSecondsLastDays(int days) {
+    var sum = 0;
+    for (final v in focusByHabitLastDays(days).values) {
+      sum += v;
+    }
+    return sum;
+  }
+
+  /// Oxirgi [days] kun ichida faoliyat bo'lgan ALOHIDA kunlar soni (izchillik).
+  int activeDaysLastDays(int days) {
+    final now = DateTime.now();
+    final from = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: days - 1));
+    final fromKey = dayKey(from);
+    final toKey = dayKey(now);
+    final seen = <int>{};
+    for (final key in _box.keys) {
+      final s = key.toString();
+      final sep = s.indexOf('|');
+      if (sep <= 0) continue;
+      final dk = int.tryParse(s.substring(0, sep));
+      if (dk == null || dk < fromKey || dk > toKey) continue;
+      if (((_box.get(key) as int?) ?? 0) > 0) seen.add(dk);
+    }
+    return seen.length;
+  }
 }
