@@ -59,11 +59,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _DashboardHeader(
-                habits: habits,
-                now: now,
-                t: t,
-                userName: userName,
-                userEmoji: userEmoji),
+              habits: habits,
+              now: now,
+              t: t,
+              userName: userName,
+              userEmoji: userEmoji,
+            ),
             Expanded(
               child: habits.isEmpty
                   ? _EmptyState(t: t)
@@ -79,10 +80,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           t: t,
                           onOpen: () => Navigator.of(context).push(
                             PageRouteBuilder(
-                              transitionDuration:
-                                  const Duration(milliseconds: 600),
-                              reverseTransitionDuration:
-                                  const Duration(milliseconds: 480),
+                              transitionDuration: const Duration(
+                                milliseconds: 600,
+                              ),
+                              reverseTransitionDuration: const Duration(
+                                milliseconds: 480,
+                              ),
                               pageBuilder: (_, __, ___) =>
                                   ActiveSessionScreen(habitId: h.id),
                               transitionsBuilder: (_, anim, __, child) {
@@ -96,8 +99,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 return FadeTransition(
                                   opacity: curved,
                                   child: ScaleTransition(
-                                    scale: Tween<double>(begin: 0.85, end: 1.0)
-                                        .animate(curved),
+                                    scale: Tween<double>(
+                                      begin: 0.85,
+                                      end: 1.0,
+                                    ).animate(curved),
                                     child: child,
                                   ),
                                 );
@@ -145,7 +150,9 @@ class _DashboardHeader extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     // Har bir odat soniyaga yaxlitlanib qo'shiladi -> jami kartalardagi yig'indiga teng.
     final totalElapsed = habits.fold<int>(
-        0, (s, h) => s + (h.session.elapsedMs(now) ~/ 1000) * 1000);
+      0,
+      (s, h) => s + (h.session.elapsedMs(now) ~/ 1000) * 1000,
+    );
     final active = habits
         .where((h) => h.session.isRunning && !h.session.isComplete(now))
         .length;
@@ -168,14 +175,29 @@ class _DashboardHeader extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              _chip(context, Icons.bolt_rounded, formatDuration(totalElapsed),
-                  t.totalFocus, scheme.primary),
+              _chip(
+                context,
+                Icons.bolt_rounded,
+                formatDuration(totalElapsed),
+                t.totalFocus,
+                scheme.primary,
+              ),
               const SizedBox(width: 10),
-              _chip(context, Icons.play_arrow_rounded, '$active', t.activeLabel,
-                  const Color(0xFF00D2D3)),
+              _chip(
+                context,
+                Icons.play_arrow_rounded,
+                '$active',
+                t.activeLabel,
+                const Color(0xFF00D2D3),
+              ),
               const SizedBox(width: 10),
-              _chip(context, Icons.check_rounded, '$done', t.completedLabel,
-                  const Color(0xFF55EFC4)),
+              _chip(
+                context,
+                Icons.check_rounded,
+                '$done',
+                t.completedLabel,
+                const Color(0xFF55EFC4),
+              ),
             ],
           ),
         ],
@@ -183,8 +205,13 @@ class _DashboardHeader extends StatelessWidget {
     );
   }
 
-  Widget _chip(BuildContext context, IconData icon, String value, String label,
-      Color color) {
+  Widget _chip(
+    BuildContext context,
+    IconData icon,
+    String value,
+    String label,
+    Color color,
+  ) {
     final scheme = Theme.of(context).colorScheme;
     return Expanded(
       child: Container(
@@ -337,7 +364,9 @@ class _HabitCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                fontSize: 17, fontWeight: FontWeight.w600),
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         SizedBox(
@@ -352,9 +381,13 @@ class _HabitCard extends StatelessWidget {
                             },
                             itemBuilder: (_) => [
                               PopupMenuItem(
-                                  value: 'reset', child: Text(t.menuReset)),
+                                value: 'reset',
+                                child: Text(t.menuReset),
+                              ),
                               PopupMenuItem(
-                                  value: 'delete', child: Text(t.menuDelete)),
+                                value: 'delete',
+                                child: Text(t.menuDelete),
+                              ),
                             ],
                           ),
                         ),
@@ -373,8 +406,8 @@ class _HabitCard extends StatelessWidget {
                       complete
                           ? t.statusDone
                           : running
-                              ? t.statusRunning
-                              : t.statusPaused,
+                          ? t.statusRunning
+                          : t.statusPaused,
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w500,

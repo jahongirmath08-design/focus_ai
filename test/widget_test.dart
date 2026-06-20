@@ -14,8 +14,9 @@ void main() {
     await settings.put('onboarding_seen', true);
   });
 
-  testWidgets('Home ochiladi: navigatsiya va "Odat qo\'shish" tugmasi bor',
-      (tester) async {
+  testWidgets('Home ochiladi: navigatsiya va "Odat qo\'shish" tugmasi bor', (
+    tester,
+  ) async {
     await tester.pumpWidget(const FocusAiApp());
     await tester.pump();
     expect(find.text('Bugun'), findsOneWidget); // pastki navigatsiya

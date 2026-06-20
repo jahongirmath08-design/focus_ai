@@ -45,7 +45,9 @@ class _AddHabitSheetState extends ConsumerState<_AddHabitSheet> {
   void _save() {
     final name = _controller.text.trim();
     if (name.isEmpty) return;
-    ref.read(habitsProvider.notifier).addHabit(
+    ref
+        .read(habitsProvider.notifier)
+        .addHabit(
           name: name,
           goalMs: _goalMinutes * 60 * 1000,
           colorValue: AppColors.habitColors[_colorIndex].toARGB32(),
@@ -85,8 +87,10 @@ class _AddHabitSheetState extends ConsumerState<_AddHabitSheet> {
             Text(t.newHabit, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             // Emoji (belgi) tanlagich
-            Text(t.avatarLabel,
-                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13)),
+            Text(
+              t.avatarLabel,
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13),
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 48,
@@ -106,8 +110,9 @@ class _AddHabitSheetState extends ConsumerState<_AddHabitSheet> {
                         shape: BoxShape.circle,
                         color: sel
                             ? scheme.primaryContainer
-                            : scheme.surfaceContainerHighest
-                                .withValues(alpha: 0.4),
+                            : scheme.surfaceContainerHighest.withValues(
+                                alpha: 0.4,
+                              ),
                         border: Border.all(
                           color: sel ? scheme.primary : Colors.transparent,
                           width: 2,
@@ -191,10 +196,7 @@ class _AddHabitSheetState extends ConsumerState<_AddHabitSheet> {
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
-                onPressed: _save,
-                child: Text(t.add),
-              ),
+              child: FilledButton(onPressed: _save, child: Text(t.add)),
             ),
           ],
         ),

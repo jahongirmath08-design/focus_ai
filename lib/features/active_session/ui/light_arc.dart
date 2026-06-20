@@ -43,7 +43,8 @@ class _LightArcState extends State<LightArc> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     );
-    if (widget.complete) _burst.value = 1.0; // ochilganda allaqachon tugagan bo'lsa — portlashsiz
+    if (widget.complete)
+      _burst.value = 1.0; // ochilganda allaqachon tugagan bo'lsa — portlashsiz
   }
 
   @override
@@ -253,8 +254,11 @@ class _LightArcPainter extends CustomPainter {
             p,
             stroke * 0.34 * (1 - b),
             Paint()
-              ..color = Color.lerp(hot, Colors.white, 0.5)!
-                  .withValues(alpha: (1 - b) * 0.95),
+              ..color = Color.lerp(
+                hot,
+                Colors.white,
+                0.5,
+              )!.withValues(alpha: (1 - b) * 0.95),
           );
         }
       }
@@ -373,7 +377,8 @@ class _MiniArcPainter extends CustomPainter {
     if (!complete) {
       // ember uch (statik porlash)
       final tipAngle = start + sweep;
-      final tip = center + Offset(math.cos(tipAngle), math.sin(tipAngle)) * radius;
+      final tip =
+          center + Offset(math.cos(tipAngle), math.sin(tipAngle)) * radius;
       canvas.drawCircle(
         tip,
         stroke * 1.1,

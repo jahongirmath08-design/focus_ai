@@ -27,10 +27,9 @@ void main() {
     });
 
     test('resume to\'plangan vaqt ustiga davom etadi', () {
-      final s = const FocusSession(goalMs: 60000)
-          .start(t0)
-          .pause(at(10))
-          .start(at(20));
+      final s = const FocusSession(
+        goalMs: 60000,
+      ).start(t0).pause(at(10)).start(at(20));
       expect(s.rawElapsedMs(at(25)), 15000); // 10s + 5s
     });
 

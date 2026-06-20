@@ -5,8 +5,9 @@ import '../../features/history/data/history_repository.dart';
 import '../l10n/l10n.dart';
 
 /// Tanlangan til — Hive 'settings' box'ida saqlanadi (qayta ochilganda esda qoladi).
-final languageProvider =
-    NotifierProvider<LanguageNotifier, AppLanguage>(LanguageNotifier.new);
+final languageProvider = NotifierProvider<LanguageNotifier, AppLanguage>(
+  LanguageNotifier.new,
+);
 
 class LanguageNotifier extends Notifier<AppLanguage> {
   @override
@@ -32,8 +33,9 @@ class LanguageNotifier extends Notifier<AppLanguage> {
 final l10nProvider = Provider<L10n>((ref) => L10n(ref.watch(languageProvider)));
 
 /// Foydalanuvchi ismi — salomlashishda ishlatiladi (ixtiyoriy, lokal).
-final userNameProvider =
-    NotifierProvider<UserNameNotifier, String>(UserNameNotifier.new);
+final userNameProvider = NotifierProvider<UserNameNotifier, String>(
+  UserNameNotifier.new,
+);
 
 class UserNameNotifier extends Notifier<String> {
   @override
@@ -54,8 +56,9 @@ class UserNameNotifier extends Notifier<String> {
 }
 
 /// Foydalanuvchi belgisi (emoji avatar) — lokal, maxfiylikka mos.
-final userEmojiProvider =
-    NotifierProvider<UserEmojiNotifier, String>(UserEmojiNotifier.new);
+final userEmojiProvider = NotifierProvider<UserEmojiNotifier, String>(
+  UserEmojiNotifier.new,
+);
 
 class UserEmojiNotifier extends Notifier<String> {
   @override

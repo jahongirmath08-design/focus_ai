@@ -22,7 +22,11 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnbPage {
-  const _OnbPage({required this.title, required this.body, required this.color});
+  const _OnbPage({
+    required this.title,
+    required this.body,
+    required this.color,
+  });
   final String title;
   final String body;
   final Color color;
@@ -41,10 +45,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   ];
 
   List<_OnbPage> _buildPages(L10n t) => [
-        _OnbPage(title: t.onb1Title, body: t.onb1Body, color: _colors[0]),
-        _OnbPage(title: t.onb2Title, body: t.onb2Body, color: _colors[1]),
-        _OnbPage(title: t.onb3Title, body: t.onb3Body, color: _colors[2]),
-      ];
+    _OnbPage(title: t.onb1Title, body: t.onb1Body, color: _colors[0]),
+    _OnbPage(title: t.onb2Title, body: t.onb2Body, color: _colors[1]),
+    _OnbPage(title: t.onb3Title, body: t.onb3Body, color: _colors[2]),
+  ];
 
   @override
   void initState() {
@@ -92,10 +96,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
               gradient: RadialGradient(
                 center: const Alignment(0, -0.35),
                 radius: 1.1,
-                colors: [
-                  pageColor.withValues(alpha: 0.18),
-                  Colors.transparent,
-                ],
+                colors: [pageColor.withValues(alpha: 0.18), Colors.transparent],
               ),
             ),
           ),
@@ -110,7 +111,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                       FadeTransition(
                         opacity: CurvedAnimation(
                           parent: _entrance,
-                          curve: const Interval(0.1, 0.6, curve: Curves.easeOut),
+                          curve: const Interval(
+                            0.1,
+                            0.6,
+                            curve: Curves.easeOut,
+                          ),
                         ),
                         child: _Wordmark(color: pageColor),
                       ),
@@ -230,7 +235,7 @@ class _OnbPageView extends StatelessWidget {
         // Entrance: yoy pastdan ko'tarilib, sakrab kattalashadi; matn suzib chiqadi.
         final heroScale =
             (0.58 + 0.42 * _seg(e, 0.0, 0.60, Curves.easeOutBack)) *
-                (0.92 + 0.08 * centered);
+            (0.92 + 0.08 * centered);
         final heroRise = (1 - _seg(e, 0.0, 0.55, Curves.easeOutCubic)) * 40;
         final heroOpacity =
             _seg(e, 0.0, 0.42, Curves.easeOut) * (0.20 + 0.80 * centered);
@@ -248,7 +253,10 @@ class _OnbPageView extends StatelessWidget {
                   scale: heroScale,
                   child: Opacity(
                     opacity: heroOpacity.clamp(0.0, 1.0),
-                    child: SizedBox(height: 250, child: Center(child: _hero(fill))),
+                    child: SizedBox(
+                      height: 250,
+                      child: Center(child: _hero(fill)),
+                    ),
                   ),
                 ),
               ),

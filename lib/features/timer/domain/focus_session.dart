@@ -97,17 +97,17 @@ class FocusSession {
 
   /// Saqlash uchun (keyin Hive bilan ishlatamiz).
   Map<String, dynamic> toMap() => {
-        'accumulatedMs': accumulatedMs,
-        'runningSinceMs': runningSince?.millisecondsSinceEpoch,
-        'goalMs': goalMs,
-      };
+    'accumulatedMs': accumulatedMs,
+    'runningSinceMs': runningSince?.millisecondsSinceEpoch,
+    'goalMs': goalMs,
+  };
 
   /// Saqlangandan qayta tiklash.
   factory FocusSession.fromMap(Map<String, dynamic> map) => FocusSession(
-        accumulatedMs: (map['accumulatedMs'] as int?) ?? 0,
-        runningSince: map['runningSinceMs'] == null
-            ? null
-            : DateTime.fromMillisecondsSinceEpoch(map['runningSinceMs'] as int),
-        goalMs: (map['goalMs'] as int?) ?? 0,
-      );
+    accumulatedMs: (map['accumulatedMs'] as int?) ?? 0,
+    runningSince: map['runningSinceMs'] == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(map['runningSinceMs'] as int),
+    goalMs: (map['goalMs'] as int?) ?? 0,
+  );
 }

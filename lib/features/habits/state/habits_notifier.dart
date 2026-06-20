@@ -8,8 +8,9 @@ import '../domain/habit.dart';
 
 /// Odatlar ro'yxatini boshqaradigan Riverpod state.
 /// Holat o'zgargan sayin Hive'ga saqlaydi. UI faqat o'qiydi.
-final habitsProvider =
-    NotifierProvider<HabitsNotifier, List<Habit>>(HabitsNotifier.new);
+final habitsProvider = NotifierProvider<HabitsNotifier, List<Habit>>(
+  HabitsNotifier.new,
+);
 
 class HabitsNotifier extends Notifier<List<Habit>> {
   HabitsRepository? _repo;
@@ -33,7 +34,8 @@ class HabitsNotifier extends Notifier<List<Habit>> {
   List<Habit> _migrate(List<Habit> habits) {
     try {
       final settings = Hive.box('settings');
-      if (settings.get('history_v2', defaultValue: false) == true) return habits;
+      if (settings.get('history_v2', defaultValue: false) == true)
+        return habits;
 
       // 1) Maqsaddan oshgan vaqtni maqsadga tenglashtiramiz.
       final fixed = <Habit>[];

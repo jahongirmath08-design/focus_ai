@@ -45,13 +45,17 @@ class ProfileScreen extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.w700),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       t.localMode,
                       style: TextStyle(
-                          color: scheme.onSurfaceVariant, fontSize: 13),
+                        color: scheme.onSurfaceVariant,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
@@ -59,8 +63,7 @@ class ProfileScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
                 tooltip: t.editName,
-                onPressed: () =>
-                    _editProfile(context, ref, t, userName, emoji),
+                onPressed: () => _editProfile(context, ref, t, userName, emoji),
               ),
             ],
           ),
@@ -110,8 +113,13 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _editProfile(BuildContext context, WidgetRef ref, L10n t,
-      String currentName, String currentEmoji) {
+  void _editProfile(
+    BuildContext context,
+    WidgetRef ref,
+    L10n t,
+    String currentName,
+    String currentEmoji,
+  ) {
     final controller = TextEditingController(text: currentName);
     var emoji = currentEmoji;
 
@@ -170,8 +178,9 @@ class ProfileScreen extends ConsumerWidget {
                               shape: BoxShape.circle,
                               color: emoji == e
                                   ? scheme.primaryContainer
-                                  : scheme.surfaceContainerHighest
-                                      .withValues(alpha: 0.4),
+                                  : scheme.surfaceContainerHighest.withValues(
+                                      alpha: 0.4,
+                                    ),
                               border: Border.all(
                                 color: emoji == e
                                     ? scheme.primary
@@ -179,7 +188,10 @@ class ProfileScreen extends ConsumerWidget {
                                 width: 2,
                               ),
                             ),
-                            child: Text(e, style: const TextStyle(fontSize: 20)),
+                            child: Text(
+                              e,
+                              style: const TextStyle(fontSize: 20),
+                            ),
                           ),
                         ),
                     ],
@@ -188,8 +200,9 @@ class ProfileScreen extends ConsumerWidget {
               ),
               actions: [
                 TextButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: Text(t.cancel)),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(t.cancel),
+                ),
                 FilledButton(onPressed: save, child: Text(t.save)),
               ],
             );
@@ -210,8 +223,9 @@ class ProfileScreen extends ConsumerWidget {
           children: [
             Text(
               t.aboutSub,
-              style:
-                  TextStyle(color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 12),
             Text(t.aboutBody),
@@ -230,7 +244,9 @@ class ProfileScreen extends ConsumerWidget {
             child: Text(t.licenses),
           ),
           TextButton(
-              onPressed: () => Navigator.of(ctx).pop(), child: Text(t.close)),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(t.close),
+          ),
         ],
       ),
     );

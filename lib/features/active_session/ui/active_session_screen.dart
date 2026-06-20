@@ -107,9 +107,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(habit.emoji.isEmpty
-            ? habit.name
-            : '${habit.emoji} ${habit.name}'),
+        title: Text(
+          habit.emoji.isEmpty ? habit.name : '${habit.emoji} ${habit.name}',
+        ),
       ),
       // Ambient "o'choq" foni — progress bilan qizийdi.
       body: AnimatedContainer(
@@ -156,12 +156,17 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                       Text(
                         complete
                             ? t.statusDone
-                            : t.remaining(formatDuration(s.remainingMs(now),
-                                roundUp: true)),
+                            : t.remaining(
+                                formatDuration(
+                                  s.remainingMs(now),
+                                  roundUp: true,
+                                ),
+                              ),
                         style: TextStyle(
                           color: complete ? color : Colors.white54,
-                          fontWeight:
-                              complete ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: complete
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                       ),
                     ],
@@ -186,19 +191,25 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                         }
                       }
                     },
-                    icon: Icon(complete
-                        ? Icons.refresh
-                        : (running ? Icons.pause : Icons.play_arrow)),
-                    label: Text(complete
-                        ? t.restart
-                        : (running ? t.pause : t.start)),
+                    icon: Icon(
+                      complete
+                          ? Icons.refresh
+                          : (running ? Icons.pause : Icons.play_arrow),
+                    ),
+                    label: Text(
+                      complete ? t.restart : (running ? t.pause : t.start),
+                    ),
                     style: FilledButton.styleFrom(
                       backgroundColor: color,
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 28, vertical: 16),
+                        horizontal: 28,
+                        vertical: 16,
+                      ),
                       textStyle: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   if (!complete) ...[
@@ -227,8 +238,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                   label: Text(t.deepFocus),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: _deepFocus ? color : Colors.white70,
-                    side:
-                        BorderSide(color: _deepFocus ? color : Colors.white24),
+                    side: BorderSide(
+                      color: _deepFocus ? color : Colors.white24,
+                    ),
                   ),
                 ),
                 if (_deepFocus) ...[

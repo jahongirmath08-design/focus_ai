@@ -72,8 +72,10 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
       appBar: AppBar(title: Text(t.statsTitle), centerTitle: false),
       body: habits.isEmpty
           ? Center(
-              child: Text(t.noData,
-                  style: TextStyle(color: scheme.onSurfaceVariant)),
+              child: Text(
+                t.noData,
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
             )
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -93,20 +95,26 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                 Text(
                   t.byHabit,
                   style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurfaceVariant),
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 if (entries.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: Text(t.noData,
-                        style: TextStyle(color: scheme.onSurfaceVariant)),
+                    child: Text(
+                      t.noData,
+                      style: TextStyle(color: scheme.onSurfaceVariant),
+                    ),
                   )
                 else
                   for (final e in entries)
                     _HabitBar(
-                        habit: e.key, seconds: e.value, maxSeconds: maxSec),
+                      habit: e.key,
+                      seconds: e.value,
+                      maxSeconds: maxSec,
+                    ),
               ],
             ),
     );
@@ -114,8 +122,11 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 }
 
 class _PeriodSelector extends StatelessWidget {
-  const _PeriodSelector(
-      {required this.days, required this.onChanged, required this.t});
+  const _PeriodSelector({
+    required this.days,
+    required this.onChanged,
+    required this.t,
+  });
 
   final int days;
   final ValueChanged<int> onChanged;
@@ -171,22 +182,26 @@ class _FocusDonutState extends State<_FocusDonut> {
 
     final sections = <PieChartSectionData>[];
     if (entries.isEmpty) {
-      sections.add(PieChartSectionData(
-        value: 1,
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        radius: 24,
-        showTitle: false,
-      ));
+      sections.add(
+        PieChartSectionData(
+          value: 1,
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          radius: 24,
+          showTitle: false,
+        ),
+      );
     } else {
       for (var i = 0; i < entries.length; i++) {
         final touched = i == _touched;
-        sections.add(PieChartSectionData(
-          value: entries[i].value,
-          color: Color(entries[i].key.colorValue),
-          radius: touched ? 34 : 24,
-          showTitle: false,
-          borderSide: BorderSide(color: scheme.surface, width: 2),
-        ));
+        sections.add(
+          PieChartSectionData(
+            value: entries[i].value,
+            color: Color(entries[i].key.colorValue),
+            radius: touched ? 34 : 24,
+            showTitle: false,
+            borderSide: BorderSide(color: scheme.surface, width: 2),
+          ),
+        );
       }
     }
 

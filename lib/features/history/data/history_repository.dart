@@ -25,8 +25,11 @@ class HistoryRepository {
   /// Oxirgi [days] kun ichida (bugun ham kiradi) har odat bo'yicha jami soniya.
   Map<String, int> focusByHabitLastDays(int days) {
     final now = DateTime.now();
-    final from = DateTime(now.year, now.month, now.day)
-        .subtract(Duration(days: days - 1));
+    final from = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: days - 1));
     final fromKey = dayKey(from);
     final toKey = dayKey(now);
     final out = <String, int>{};
