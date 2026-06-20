@@ -34,8 +34,9 @@ class HabitsNotifier extends Notifier<List<Habit>> {
   List<Habit> _migrate(List<Habit> habits) {
     try {
       final settings = Hive.box('settings');
-      if (settings.get('history_v2', defaultValue: false) == true)
+      if (settings.get('history_v2', defaultValue: false) == true) {
         return habits;
+      }
 
       // 1) Maqsaddan oshgan vaqtni maqsadga tenglashtiramiz.
       final fixed = <Habit>[];

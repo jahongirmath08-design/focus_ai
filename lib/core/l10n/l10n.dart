@@ -1,5 +1,6 @@
 /// Ilova matnlari — UCHALA til bitta joyda (uz / en / ru).
 /// Har bir kalit uchun `_p(uz, en, ru)` — shunday qilib hech qaysi til unutilmaydi.
+library;
 
 enum AppLanguage { uz, en, ru }
 

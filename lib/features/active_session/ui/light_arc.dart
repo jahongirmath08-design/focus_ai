@@ -43,8 +43,9 @@ class _LightArcState extends State<LightArc> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     );
-    if (widget.complete)
+    if (widget.complete) {
       _burst.value = 1.0; // ochilganda allaqachon tugagan bo'lsa — portlashsiz
+    }
   }
 
   @override
@@ -75,7 +76,7 @@ class _LightArcState extends State<LightArc> with TickerProviderStateMixin {
           RepaintBoundary(
             child: AnimatedBuilder(
               animation: Listenable.merge([_pulse, _burst]),
-              builder: (_, __) => CustomPaint(
+              builder: (_, _) => CustomPaint(
                 size: Size.square(widget.size),
                 painter: _LightArcPainter(
                   progress: widget.progress.clamp(0.0, 1.0),
@@ -310,7 +311,7 @@ class MiniLightArc extends StatelessWidget {
               complete: complete,
             ),
           ),
-          if (child != null) child!,
+          ?child,
         ],
       ),
     );

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 import 'core/theme/app_colors.dart';
@@ -34,15 +33,14 @@ class FocusAiApp extends StatelessWidget {
         seedColor: AppColors.accent,
         brightness: Brightness.dark,
       ),
+      // Premium tipografiya — Space Grotesk (ilova ichiga joylangan, offline ham).
+      fontFamily: 'SpaceGrotesk',
     );
     return ProviderScope(
       child: MaterialApp(
         title: 'Focus AI',
         debugShowCheckedModeBanner: false,
-        // Premium, o'ziga xos tipografiya — Space Grotesk (butun ilova bo'ylab).
-        theme: base.copyWith(
-          textTheme: GoogleFonts.spaceGroteskTextTheme(base.textTheme),
-        ),
+        theme: base,
         home: const RootGate(),
       ),
     );

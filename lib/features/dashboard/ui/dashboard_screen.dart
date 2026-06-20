@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -71,7 +70,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
                       itemCount: habits.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (_, i) {
                         final h = habits[i];
                         return _HabitCard(
@@ -86,9 +85,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               reverseTransitionDuration: const Duration(
                                 milliseconds: 480,
                               ),
-                              pageBuilder: (_, __, ___) =>
+                              pageBuilder: (_, _, _) =>
                                   ActiveSessionScreen(habitId: h.id),
-                              transitionsBuilder: (_, anim, __, child) {
+                              transitionsBuilder: (_, anim, _, child) {
                                 // Hero yoy silliq o'sadi; bundan tashqari butun
                                 // ekran ozgina kattalashib (scale) fade bilan kiradi.
                                 final curved = CurvedAnimation(
