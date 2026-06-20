@@ -126,6 +126,17 @@ class L10n {
       _p('qoldi $time', '$time left', 'осталось $time');
   String get habitNotFound =>
       _p('Odat topilmadi', 'Habit not found', 'Привычка не найдена');
+  String get deepFocus => _p('Chuqur diqqat', 'Deep Focus', 'Глубокий фокус');
+  String get deepFocusHint => _p(
+        "Telefonni yuztuban qo'ying — taymer o'zi ketadi",
+        'Place your phone face down — the timer runs on its own',
+        'Положите телефон экраном вниз — таймер идёт сам',
+      );
+  String get deepFocusActive => _p(
+        'Chuqur diqqat — telefon yuztuban',
+        'Deep focus — phone face down',
+        'Глубокий фокус — телефон экраном вниз',
+      );
 
   // ---------- Statistika ----------
   String get statsTitle => _p('Statistika', 'Statistics', 'Статистика');
