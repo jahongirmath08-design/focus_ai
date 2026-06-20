@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 import 'core/theme/app_colors.dart';
@@ -27,17 +28,20 @@ class FocusAiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Aksent rang (#6C5CE7) — PLACEHOLDER (Phase 3 da brending bo'yicha aniqlanadi).
+    final base = ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.accent,
+        brightness: Brightness.dark,
+      ),
+    );
     return ProviderScope(
       child: MaterialApp(
         title: 'Focus AI',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.accent,
-            brightness: Brightness.dark,
-          ),
+        // Premium, o'ziga xos tipografiya — Space Grotesk (butun ilova bo'ylab).
+        theme: base.copyWith(
+          textTheme: GoogleFonts.spaceGroteskTextTheme(base.textTheme),
         ),
         home: const RootGate(),
       ),
