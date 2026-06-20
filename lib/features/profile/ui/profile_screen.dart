@@ -139,64 +139,66 @@ class ProfileScreen extends ConsumerWidget {
 
             return AlertDialog(
               title: Text(t.editName),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      hintText: t.nameHint,
-                      border: const OutlineInputBorder(),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: InputDecoration(
+                        hintText: t.nameHint,
+                        border: const OutlineInputBorder(),
+                      ),
+                      onSubmitted: (_) => save(),
                     ),
-                    onSubmitted: (_) => save(),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    t.avatarLabel,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 18),
+                    Text(
+                      t.avatarLabel,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: scheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final e in _emojis)
-                        GestureDetector(
-                          onTap: () => setLocal(() => emoji = e),
-                          child: Container(
-                            width: 42,
-                            height: 42,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: emoji == e
-                                  ? scheme.primaryContainer
-                                  : scheme.surfaceContainerHighest.withValues(
-                                      alpha: 0.4,
-                                    ),
-                              border: Border.all(
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final e in _emojis)
+                          GestureDetector(
+                            onTap: () => setLocal(() => emoji = e),
+                            child: Container(
+                              width: 42,
+                              height: 42,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
                                 color: emoji == e
-                                    ? scheme.primary
-                                    : Colors.transparent,
-                                width: 2,
+                                    ? scheme.primaryContainer
+                                    : scheme.surfaceContainerHighest.withValues(
+                                        alpha: 0.4,
+                                      ),
+                                border: Border.all(
+                                  color: emoji == e
+                                      ? scheme.primary
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
+                              ),
+                              child: Text(
+                                e,
+                                style: const TextStyle(fontSize: 20),
                               ),
                             ),
-                            child: Text(
-                              e,
-                              style: const TextStyle(fontSize: 20),
-                            ),
                           ),
-                        ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
               actions: [
                 TextButton(

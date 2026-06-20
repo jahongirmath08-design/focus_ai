@@ -303,16 +303,19 @@ class _OnbPageView extends StatelessWidget {
     final f = fill.clamp(0.0, 1.0);
     // Sahifa 1 (index 1) — ko'p odat: uchta mini yoy (kelganda to'ladi, % sanaydi).
     if (index == 1) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _mini(AppColors.habitColors[1], 0.45 * f, 86),
-          const SizedBox(width: 16),
-          _mini(AppColors.habitColors[2], 0.72 * f, 116),
-          const SizedBox(width: 16),
-          _mini(AppColors.habitColors[3], 0.30 * f, 86),
-        ],
+      return FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _mini(AppColors.habitColors[1], 0.45 * f, 86),
+            const SizedBox(width: 16),
+            _mini(AppColors.habitColors[2], 0.72 * f, 116),
+            const SizedBox(width: 16),
+            _mini(AppColors.habitColors[3], 0.30 * f, 86),
+          ],
+        ),
       );
     }
     // Sahifa 0 va 2 — bitta katta signature yoy (0 dan maqsadgacha quyiladi).
