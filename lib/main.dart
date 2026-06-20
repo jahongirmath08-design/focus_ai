@@ -15,6 +15,7 @@ Future<void> main() async {
     await Hive.initFlutter().timeout(const Duration(seconds: 15));
     await Hive.openBox('habits').timeout(const Duration(seconds: 15));
     await Hive.openBox('settings').timeout(const Duration(seconds: 15));
+    await Hive.openBox('history').timeout(const Duration(seconds: 15));
   } catch (e, st) {
     debugPrint('HIVE INIT muammosi (ilova saqlashsiz davom etadi): $e\n$st');
   }

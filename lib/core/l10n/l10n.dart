@@ -136,6 +136,10 @@ class L10n {
   String get statGoal => _p('Maqsad', 'Goal', 'Цель');
   String get byHabit => _p("Odatlar bo'yicha", 'By habit', 'По привычкам');
   String get noData => _p("Hali ma'lumot yo'q", 'No data yet', 'Пока нет данных');
+  String get periodDay => _p('Kunlik', 'Daily', 'День');
+  String get periodWeek => _p('Haftalik', 'Weekly', 'Неделя');
+  String get periodMonth => _p('Oylik', 'Monthly', 'Месяц');
+  String get periodYear => _p('Yillik', 'Yearly', 'Год');
 
   // ---------- Profil ----------
   String get profileTitle => _p('Profil', 'Profile', 'Профиль');

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
+import '../../features/history/data/history_repository.dart';
 import '../l10n/l10n.dart';
 
 /// Tanlangan til — Hive 'settings' box'ida saqlanadi (qayta ochilganda esda qoladi).
@@ -74,3 +75,12 @@ class UserEmojiNotifier extends Notifier<String> {
     } catch (_) {}
   }
 }
+
+/// Focus-tarix ombori (Hive 'history' box). Ochilmagan bo'lsa null.
+final historyProvider = Provider<HistoryRepository?>((ref) {
+  try {
+    return HistoryRepository(Hive.box('history'));
+  } catch (_) {
+    return null;
+  }
+});

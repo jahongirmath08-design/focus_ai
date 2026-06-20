@@ -8,12 +8,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/state/app_settings.dart';
 import '../../../core/utils/duration_format.dart';
-import '../../active_session/ui/light_arc.dart';
 import '../../habits/domain/habit.dart';
 import '../../habits/state/habits_notifier.dart';
 
-/// Statistika — "diqqat taqsimoti" halqasi (donut) + jamlanma + odatlar ro'yxati.
-/// Jonli (ticker) va jami HAR DOIM to'g'ri (Rival B aynan shu yerda yiqiladi).
+/// Statistika — davr tanlagich (Kunlik/Haftalik/Oylik/Yillik) + diqqat taqsimoti
+/// donut + odatlar bo'yicha bar. Ma'lumot focus-tarixdan (Hive 'history').
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
 
@@ -23,6 +22,7 @@ class StatisticsScreen extends ConsumerStatefulWidget {
 
 class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   Timer? _ticker;
+  int _periodDays = 1; // Kunlik
 
   @override
   void initState() {
@@ -43,125 +43,116 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     final scheme = Theme.of(context).colorScheme;
     final t = ref.watch(l10nProvider);
     final habits = ref.watch(habitsProvider);
+    final history = ref.watch(historyProvider);
     final now = DateTime.now();
 
-    // Har bir odat soniyaga yaxlitlanib qo'shiladi -> jami ro'yxatdagi yig'indiga teng.
-    final totalElapsed = habits.fold<int>(
-        0, (s, h) => s + (h.session.elapsedMs(now) ~/ 1000) * 1000);
-    final totalGoal = habits.fold<int>(0, (s, h) => s + h.session.goalMs);
-    final completed = habits.where((h) => h.session.isComplete(now)).length;
-    final overall =
-        totalGoal == 0 ? 0.0 : (totalElapsed / totalGoal).clamp(0.0, 1.0);
+    // Tanlangan davr bo'yicha har odat uchun diqqat (soniya).
+    final base = history?.focusByHabitLastDays(_periodDays) ?? <String, int>{};
+    final periodSec = Map<String, int>.from(base);
+    // Bugungi hali yozilmagan (ishlab turgan) diqqatni qo'shamiz.
+    for (final h in habits) {
+      if (h.session.isRunning) {
+        final runMs = h.session.rawElapsedMs(now) - h.session.accumulatedMs;
+        if (runMs > 0) {
+          periodSec[h.id] = (periodSec[h.id] ?? 0) + runMs ~/ 1000;
+        }
+      }
+    }
+
+    final entries = <MapEntry<Habit, double>>[];
+    for (final h in habits) {
+      final sec = periodSec[h.id] ?? 0;
+      if (sec > 0) entries.add(MapEntry(h, sec.toDouble()));
+    }
+    entries.sort((a, b) => b.value.compareTo(a.value));
+    final totalSec = entries.fold<double>(0, (s, e) => s + e.value).toInt();
+    final maxSec = entries.isEmpty ? 0.0 : entries.first.value;
 
     return Scaffold(
       appBar: AppBar(title: Text(t.statsTitle), centerTitle: false),
       body: habits.isEmpty
           ? Center(
-              child: Text(
-                t.noData,
-                style: TextStyle(color: scheme.onSurfaceVariant),
-              ),
+              child: Text(t.noData,
+                  style: TextStyle(color: scheme.onSurfaceVariant)),
             )
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
-                _FocusDonut(
-                  habits: habits,
-                  now: now,
-                  totalLabel: formatDuration(totalElapsed),
+                _PeriodSelector(
+                  days: _periodDays,
+                  onChanged: (d) => setState(() => _periodDays = d),
                   t: t,
                 ),
-                const SizedBox(height: 8),
-                _StatRow(
-                  completed: completed,
-                  total: habits.length,
-                  overall: overall,
-                  totalGoal: totalGoal,
+                const SizedBox(height: 16),
+                _FocusDonut(
+                  entries: entries,
+                  totalLabel: formatDuration(totalSec * 1000),
                   t: t,
                 ),
                 const SizedBox(height: 24),
                 Text(
                   t.byHabit,
                   style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurfaceVariant,
-                  ),
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurfaceVariant),
                 ),
-                const SizedBox(height: 12),
-                ...habits.map((h) {
-                  final color = Color(h.colorValue);
-                  final s = h.session;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      children: [
-                        MiniLightArc(
-                          progress: s.progress(now),
-                          color: color,
-                          complete: s.isComplete(now),
-                          size: 52,
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                h.emoji.isEmpty
-                                    ? h.name
-                                    : '${h.emoji} ${h.name}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${formatDuration(s.elapsedMs(now))} / ${formatDuration(s.goalMs)}',
-                                style: TextStyle(
-                                  color: scheme.onSurfaceVariant,
-                                  fontSize: 13,
-                                  fontFeatures: const [
-                                    FontFeature.tabularFigures()
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          '${(s.progress(now) * 100).round()}%',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: color,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
+                const SizedBox(height: 14),
+                if (entries.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(t.noData,
+                        style: TextStyle(color: scheme.onSurfaceVariant)),
+                  )
+                else
+                  for (final e in entries)
+                    _HabitBar(
+                        habit: e.key, seconds: e.value, maxSeconds: maxSec),
               ],
             ),
     );
   }
 }
 
-/// Diqqat taqsimoti halqasi — har odat o'z rangida segment.
-/// Segmentni bossang (yoki ustiga kelsang) — ajralib chiqadi, markazda o'sha
-/// odat nomi + jami vaqtdan ulushi (%). Segmentlar orasida ajratuvchi chiziq:
-/// 12 dan ko'p odatda yoki rang takrorlansa ham har bo'lim farqlanadi.
+class _PeriodSelector extends StatelessWidget {
+  const _PeriodSelector(
+      {required this.days, required this.onChanged, required this.t});
+
+  final int days;
+  final ValueChanged<int> onChanged;
+  final L10n t;
+
+  @override
+  Widget build(BuildContext context) {
+    final options = <int, String>{
+      1: t.periodDay,
+      7: t.periodWeek,
+      30: t.periodMonth,
+      365: t.periodYear,
+    };
+    return Wrap(
+      spacing: 8,
+      children: [
+        for (final entry in options.entries)
+          ChoiceChip(
+            label: Text(entry.value),
+            selected: days == entry.key,
+            onSelected: (_) => onChanged(entry.key),
+          ),
+      ],
+    );
+  }
+}
+
+/// Diqqat taqsimoti halqasi (davr bo'yicha). Segmentni bossang — ajralib chiqadi,
+/// markazda o'sha odat nomi + ulushi (%). Segmentlar orasida ajratuvchi chiziq.
 class _FocusDonut extends StatefulWidget {
   const _FocusDonut({
-    required this.habits,
-    required this.now,
+    required this.entries,
     required this.totalLabel,
     required this.t,
   });
 
-  final List<Habit> habits;
-  final DateTime now;
+  final List<MapEntry<Habit, double>> entries;
   final String totalLabel;
   final L10n t;
 
@@ -175,16 +166,8 @@ class _FocusDonutState extends State<_FocusDonut> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-
-    final entries = <MapEntry<Habit, double>>[];
-    var sum = 0.0;
-    for (final h in widget.habits) {
-      final sec = (h.session.elapsedMs(widget.now) ~/ 1000).toDouble();
-      if (sec > 0) {
-        sum += sec;
-        entries.add(MapEntry(h, sec));
-      }
-    }
+    final entries = widget.entries;
+    final sum = entries.fold<double>(0, (s, e) => s + e.value);
 
     final sections = <PieChartSectionData>[];
     if (entries.isEmpty) {
@@ -292,49 +275,60 @@ class _FocusDonutState extends State<_FocusDonut> {
   }
 }
 
-class _StatRow extends StatelessWidget {
-  const _StatRow({
-    required this.completed,
-    required this.total,
-    required this.overall,
-    required this.totalGoal,
-    required this.t,
+class _HabitBar extends StatelessWidget {
+  const _HabitBar({
+    required this.habit,
+    required this.seconds,
+    required this.maxSeconds,
   });
 
-  final int completed;
-  final int total;
-  final double overall;
-  final int totalGoal;
-  final L10n t;
+  final Habit habit;
+  final double seconds;
+  final double maxSeconds;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _stat(context, '$completed/$total', t.statCompleted),
-        _stat(context, '${(overall * 100).round()}%', t.statOverall),
-        _stat(context, formatDuration(totalGoal), t.statGoal),
-      ],
-    );
-  }
-
-  Widget _stat(BuildContext context, String value, String label) {
     final scheme = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            fontFeatures: [FontFeature.tabularFigures()],
+    final color = Color(habit.colorValue);
+    final frac = maxSeconds <= 0 ? 0.0 : (seconds / maxSeconds).clamp(0.0, 1.0);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  habit.emoji.isEmpty
+                      ? habit.name
+                      : '${habit.emoji} ${habit.name}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              Text(
+                formatDuration(seconds.toInt() * 1000),
+                style: TextStyle(
+                  color: scheme.onSurfaceVariant,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(label,
-            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-      ],
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: frac,
+              minHeight: 8,
+              backgroundColor: scheme.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
