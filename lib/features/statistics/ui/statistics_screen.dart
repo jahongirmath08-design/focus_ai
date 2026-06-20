@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' show FontFeature;
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,11 +9,11 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/state/app_settings.dart';
 import '../../../core/utils/duration_format.dart';
 import '../../active_session/ui/light_arc.dart';
+import '../../habits/domain/habit.dart';
 import '../../habits/state/habits_notifier.dart';
 
-/// Statistika — barcha odatlar bo'yicha jamlanma.
-/// Jami HAR DOIM to'g'ri hisoblanadi (Rival B aynan shu — mos kelmaydigan jami —
-/// bilan yiqiladi; biz aniqlik bilan yutamiz).
+/// Statistika — "diqqat taqsimoti" halqasi (donut) + jamlanma + odatlar ro'yxati.
+/// Jonli (ticker) va jami HAR DOIM to'g'ri (Rival B aynan shu yerda yiqiladi).
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
 
@@ -26,7 +27,6 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   @override
   void initState() {
     super.initState();
-    // Jonli yangilanish — Bugun ekrani bilan aynan mos bo'lishi uchun.
     _ticker = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (mounted) setState(() {});
     });
@@ -63,17 +63,23 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               ),
             )
           : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
-                _SummaryCard(
+                _FocusDonut(
+                  habits: habits,
+                  now: now,
+                  totalLabel: formatDuration(totalElapsed),
                   t: t,
-                  totalElapsed: totalElapsed,
-                  totalGoal: totalGoal,
+                ),
+                const SizedBox(height: 8),
+                _StatRow(
                   completed: completed,
                   total: habits.length,
                   overall: overall,
+                  totalGoal: totalGoal,
+                  t: t,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Text(
                   t.byHabit,
                   style: TextStyle(
@@ -142,80 +148,180 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
+/// Diqqat taqsimoti halqasi — har odat o'z rangida segment.
+/// Segmentni bossang (yoki ustiga kelsang) — ajralib chiqadi, markazda o'sha
+/// odat nomi + jami vaqtdan ulushi (%). Segmentlar orasida ajratuvchi chiziq:
+/// 12 dan ko'p odatda yoki rang takrorlansa ham har bo'lim farqlanadi.
+class _FocusDonut extends StatefulWidget {
+  const _FocusDonut({
+    required this.habits,
+    required this.now,
+    required this.totalLabel,
     required this.t,
-    required this.totalElapsed,
-    required this.totalGoal,
-    required this.completed,
-    required this.total,
-    required this.overall,
   });
 
+  final List<Habit> habits;
+  final DateTime now;
+  final String totalLabel;
   final L10n t;
-  final int totalElapsed;
-  final int totalGoal;
-  final int completed;
-  final int total;
-  final double overall;
+
+  @override
+  State<_FocusDonut> createState() => _FocusDonutState();
+}
+
+class _FocusDonutState extends State<_FocusDonut> {
+  int _touched = -1;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            scheme.primary.withValues(alpha: 0.18),
-            scheme.primary.withValues(alpha: 0.04),
-          ],
-        ),
-        border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+
+    final entries = <MapEntry<Habit, double>>[];
+    var sum = 0.0;
+    for (final h in widget.habits) {
+      final sec = (h.session.elapsedMs(widget.now) ~/ 1000).toDouble();
+      if (sec > 0) {
+        sum += sec;
+        entries.add(MapEntry(h, sec));
+      }
+    }
+
+    final sections = <PieChartSectionData>[];
+    if (entries.isEmpty) {
+      sections.add(PieChartSectionData(
+        value: 1,
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        radius: 24,
+        showTitle: false,
+      ));
+    } else {
+      for (var i = 0; i < entries.length; i++) {
+        final touched = i == _touched;
+        sections.add(PieChartSectionData(
+          value: entries[i].value,
+          color: Color(entries[i].key.colorValue),
+          radius: touched ? 34 : 24,
+          showTitle: false,
+          borderSide: BorderSide(color: scheme.surface, width: 2),
+        ));
+      }
+    }
+
+    final showTouched = _touched >= 0 && _touched < entries.length && sum > 0;
+    final Widget center;
+    if (showTouched) {
+      final h = entries[_touched].key;
+      final pct = (entries[_touched].value / sum * 100).round();
+      center = Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            t.totalFocusCaps,
+            h.emoji.isEmpty ? h.name : '${h.emoji} ${h.name}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '$pct%',
             style: TextStyle(
-              fontSize: 12,
-              letterSpacing: 1.5,
+              fontSize: 32,
+              fontWeight: FontWeight.w700,
+              color: Color(h.colorValue),
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      );
+    } else {
+      center = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            widget.t.totalFocusCaps,
+            style: TextStyle(
+              fontSize: 11,
+              letterSpacing: 1.2,
               color: scheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
-            formatDuration(totalElapsed),
+            widget.totalLabel,
             style: const TextStyle(
-              fontSize: 40,
+              fontSize: 30,
               fontWeight: FontWeight.w300,
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _stat(context, '$completed/$total', t.statCompleted),
-              const SizedBox(width: 28),
-              _stat(context, '${(overall * 100).round()}%', t.statOverall),
-              const SizedBox(width: 28),
-              _stat(context, formatDuration(totalGoal), t.statGoal),
-            ],
+        ],
+      );
+    }
+
+    return SizedBox(
+      height: 230,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          PieChart(
+            PieChartData(
+              sections: sections,
+              centerSpaceRadius: 74,
+              sectionsSpace: sum > 0 ? 3 : 0,
+              startDegreeOffset: -90,
+              pieTouchData: PieTouchData(
+                touchCallback: (event, resp) {
+                  setState(() {
+                    if (!event.isInterestedForInteractions ||
+                        resp == null ||
+                        resp.touchedSection == null) {
+                      _touched = -1;
+                      return;
+                    }
+                    _touched = resp.touchedSection!.touchedSectionIndex;
+                  });
+                },
+              ),
+            ),
           ),
+          IgnorePointer(child: center),
         ],
       ),
+    );
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  const _StatRow({
+    required this.completed,
+    required this.total,
+    required this.overall,
+    required this.totalGoal,
+    required this.t,
+  });
+
+  final int completed;
+  final int total;
+  final double overall;
+  final int totalGoal;
+  final L10n t;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _stat(context, '$completed/$total', t.statCompleted),
+        _stat(context, '${(overall * 100).round()}%', t.statOverall),
+        _stat(context, formatDuration(totalGoal), t.statGoal),
+      ],
     );
   }
 
   Widget _stat(BuildContext context, String value, String label) {
     final scheme = Theme.of(context).colorScheme;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           value,
@@ -226,10 +332,8 @@ class _SummaryCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-        ),
+        Text(label,
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
       ],
     );
   }
