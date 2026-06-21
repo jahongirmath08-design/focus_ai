@@ -6,6 +6,7 @@ import '../../../core/state/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../habits/state/habits_notifier.dart';
 import '../domain/ai_coach.dart';
+import 'coach_chat_screen.dart';
 
 /// "Pro" bo'lim — premium markaz. Hozir: OFFLINE AI-murabbiy (jonli, kalitsiz)
 /// + online imkoniyatlar (internet bilan keyin ulanadi).
@@ -73,6 +74,9 @@ class ProScreen extends ConsumerWidget {
                   body: t.proAiChatBody,
                   badge: t.proNeedsInternet,
                   color: _gradA,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const CoachChatScreen()),
+                  ),
                 ),
                 _OnlineTile(
                   icon: Icons.insights_rounded,
@@ -80,6 +84,14 @@ class ProScreen extends ConsumerWidget {
                   body: t.proAiAnalysisBody,
                   badge: t.proNeedsInternet,
                   color: _gradB,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => CoachChatScreen(
+                        title: t.proAiAnalysisTitle,
+                        autoPrompt: t.chatAnalyzePrompt,
+                      ),
+                    ),
+                  ),
                 ),
                 _OnlineTile(
                   icon: Icons.cloud_sync_rounded,
@@ -87,6 +99,9 @@ class ProScreen extends ConsumerWidget {
                   body: t.proCloudBody,
                   badge: t.proSoon,
                   color: const Color(0xFF4FA3F7),
+                  onTap: () => ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(t.proSoon))),
                 ),
                 _OnlineTile(
                   icon: Icons.emoji_events_rounded,
@@ -94,6 +109,9 @@ class ProScreen extends ConsumerWidget {
                   body: t.proFriendsBody,
                   badge: t.proSoon,
                   color: const Color(0xFFEFA84C),
+                  onTap: () => ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(t.proSoon))),
                 ),
               ],
             ),
@@ -333,6 +351,7 @@ class _OnlineTile extends StatelessWidget {
     required this.body,
     required this.badge,
     required this.color,
+    this.onTap,
   });
 
   final IconData icon;
@@ -340,80 +359,92 @@ class _OnlineTile extends StatelessWidget {
   final String body;
   final String badge;
   final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
         color: scheme.surfaceContainerHighest.withValues(alpha: 0.28),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            alignment: Alignment.center,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: 0.4),
+              ),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        badge,
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w600,
-                          color: color,
-                        ),
-                      ),
-                    ),
-                  ],
+                Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  body,
-                  style: TextStyle(
-                    fontSize: 13,
-                    height: 1.3,
-                    color: scheme.onSurfaceVariant,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.16),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              badge,
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w600,
+                                color: color,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        body,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.3,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

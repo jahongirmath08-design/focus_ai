@@ -87,3 +87,35 @@ final historyProvider = Provider<HistoryRepository?>((ref) {
     return null;
   }
 });
+
+/// Gemini API kaliti — foydalanuvchi o'zi kiritadi (online jonli AI uchun).
+/// FAQAT shu qurilmada (Hive 'settings') saqlanadi — hech qayerga yuborilmaydi.
+final geminiKeyProvider = NotifierProvider<GeminiKeyNotifier, String>(
+  GeminiKeyNotifier.new,
+);
+
+class GeminiKeyNotifier extends Notifier<String> {
+  /// Ixtiyoriy: bu yerga bepul Gemini kalitini qo'ysang, ilova HAMMAGA
+  /// kalitsiz ishlaydi (sudyalar hech narsa kiritmaydi). Bo'sh qolsa —
+  /// har bir foydalanuvchi o'z kalitini ilova ichida kiritadi.
+  static const _embeddedKey = '';
+
+  @override
+  String build() {
+    try {
+      final saved =
+          Hive.box('settings').get('gemini_key', defaultValue: '') as String;
+      return saved.isNotEmpty ? saved : _embeddedKey;
+    } catch (_) {
+      return _embeddedKey;
+    }
+  }
+
+  void setKey(String key) {
+    final k = key.trim();
+    state = k;
+    try {
+      Hive.box('settings').put('gemini_key', k);
+    } catch (_) {}
+  }
+}

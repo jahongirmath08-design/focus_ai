@@ -3,7 +3,7 @@
 > Sessiyalararo XOTIRAMIZ. Suhbat emas — shu fayl + git tarixi + kod bizning haqiqiy yodimiz.
 > Har ishchi qadam oxirida yangilanadi. Yangi sessiya boshida AVVAL shu fayl o'qiladi.
 
-**Oxirgi yangilanish:** 2026-06-20
+**Oxirgi yangilanish:** 2026-06-21
 **Loyiha:** Focus AI — vaqtga asoslangan odat kuzatuvchi mobil ilova (konkurs)
 **Maqsad:** 100 ballik 5 mezon bo'yicha g'olib (Krea 30 + Inter 25 + Diz 20 + Funk 15 + Kod 10). G'alaba 75 ballda (Krea+Inter+Diz).
 
@@ -21,14 +21,22 @@
   - **Profil**: emoji avatar + ism (tahrirlanadi) + **til tanlagich** + tanishtiruvni qayta ko'rish + "Ilova haqida" (o'zbekcha + Litsenziyalar tugmasi).
 - **KO'P TILLILIK (uz/en/ru) ✅**: `L10n` (barcha matn 3 tilda, bitta joyda), `languageProvider`+`l10nProvider` (Hive saqlanadi). BARCHA ekran tilga ulangan. Profilda til bossang — butun ilova darhol o'zgaradi.
 - **SHAXSIYLASHTIRISH ✅**: foydalanuvchi ismi + emoji avatar (`userNameProvider`, `userEmojiProvider`). Odatga ham emoji (modelda `emoji`), nom oldida ko'rinadi. Odat qo'shishda: emoji tanlagich + **qo'lda vaqt** (preset + "Boshqa") + **12 rang**.
-- **Git:** `aec1fef` Phase 1 → `ce4abd3` signature design → `88121e3` Hero/transition → `a549aeb`+`0fa7a97` onboarding+loader. **Keyingi commit:** Home/nav + i18n + emoji/ranglar (hozir saqlanyapti).
+- **Git:** … onboarding/loader → Home+i18n+emoji → `5e64162` overflow+DeepFocus matn → `a7a0356` Space Grotesk (bundled)+lint toza (analyze:0). **Saqlanmagan (ishlaydi):** Pro+offline murabbiy, jonli AI (Gemini)+nusxalash.
+
+## 1b. KEYIN QO'SHILGANI (2026-06-21)
+- **Deep Focus (sensors_plus) ✅** ekran-pastga → taymer avtomatik (REAL telefonda sinab ko'rildi).
+- **Space Grotesk shrift ✅** ilova ICHIGA joylangan (`assets/fonts/`), offline premium. google_fonts olib tashlandi.
+- **Statistika grafik ✅** davr tanlagich (kun/hafta/oy/yil) + fl_chart donut + bar.
+- **Yakuniy APK ✅** `build/app/outputs/flutter-apk/app-release.apk` (~50MB), telefonda ishlaydi. `flutter analyze`: No issues found.
+- **PRO BO'LIM ✅** 4-tab "Pro" (premium gradient hub). Offline AI-murabbiy (statistikadan shaxsiy tahlil, kalitsiz) + online teaser kartalar. 3 til.
+- **JONLI AI (Gemini) ✅** `gemini-2.5-flash`, kalit `x-goog-api-key` sarlavhada (URL emas), kalit faqat qurilmada (Hive). "Thinking" o'chirilgan → javob TO'LIQ. Murabbiy real statistikani biladi. Suhbat: SelectableText so'z-tanlash + "Nusxalash" tugmasi + haptika. Kalitsiz fallback (`GeminiKeyNotifier._embeddedKey`) tayyor.
+- Yangi fayllar: `features/pro/{domain/ai_coach.dart, ui/pro_screen.dart, ui/coach_chat_screen.dart, data/gemini_service.dart}`; `app_settings.dart`+`geminiKeyProvider`; `http` paket.
 
 ## 2. KEYINGI qadam (NEXT)
-1. **(hozir)** Home/nav + 3 til + emoji commit.
-2. Tozalash: `lib/core/utils/uz_date.dart` (o'lik, ishlatilmaydi) o'chirish; `dart format .`.
-3. Qolgan "wow": sensor "Deep Focus" (telefon yuztuban), bildirishnomalar, AI murabbiy (o'zbekcha), statistikada grafik (fl_chart), google_fonts.
-4. Eski ishlatilmayotgan `timer_screen.dart` + `session_repository.dart` o'chirish.
-5. Yakuniy: Android APK + demo video (o'zbekcha, ≤3 daq) — kill/restore lahzasini ko'rsatish (raqiblarda yo'q).
+1. **Rasm (multimodal)** — `image_picker` → Gemini `inline_data`; murabbiy rasmni tushunadi/tahlil qiladi.
+2. **Ovoz** — `speech_to_text` → mikrofon → matnga → yuborish (Android RECORD_AUDIO ruxsati kerak).
+3. Bildirishnomalar (`flutter_local_notifications`).
+4. Yakuniy: `_embeddedKey`ga kalit → kalitsiz APK + demo video (o'zbekcha, ≤3 daq).
 
 ## 3. RAQOBAT STRATEGIYASI (raqiblar tahlili — MUHIM)
 **G'alaba 3 strukturaviy ustunlikda — uchchalasi bizda BOR, raqiblarda YO'Q:** (1) jonli "vaqt" vizuali (quyma yoy), (2) immersiv to'liq ekran sessiya, (3) 100% nishonlash.

@@ -435,4 +435,68 @@ class L10n {
       'Отдых — часть плана: знай, когда остановиться.',
     ],
   };
+
+  // ---------- Jonli AI suhbat (Gemini) ----------
+  String get chatSetupTitle =>
+      _p("Jonli AI'ni yoqing", 'Enable live AI', 'Включите живой ИИ');
+  String get chatSetupBody => _p(
+    "Bepul Gemini kalitini bir marta kiriting — murabbiy jonli javob beradi. "
+        "Kalit faqat shu qurilmada saqlanadi, hech qayerga yuborilmaydi.",
+    'Enter a free Gemini key once — the coach replies live. '
+        'The key is stored only on this device and sent nowhere else.',
+    'Введите бесплатный ключ Gemini один раз — наставник ответит вживую. '
+        'Ключ хранится только на этом устройстве.',
+  );
+  String get chatSetupButton =>
+      _p('Kalit kiritish', 'Enter key', 'Ввести ключ');
+  String get chatGetKeyHint => _p(
+    'Bepul kalit: aistudio.google.com',
+    'Free key at: aistudio.google.com',
+    'Бесплатный ключ: aistudio.google.com',
+  );
+  String get chatKeyDialogTitle =>
+      _p('Gemini API kaliti', 'Gemini API key', 'Ключ Gemini API');
+  String get chatKeyDialogHint => _p(
+    'Kalitni shu yerga joylashtiring',
+    'Paste your key here',
+    'Вставьте ключ сюда',
+  );
+  String get chatChangeKey =>
+      _p("Kalitni o'zgartirish", 'Change key', 'Изменить ключ');
+  String get chatInputHint =>
+      _p('Xabar yozing…', 'Type a message…', 'Напишите сообщение…');
+  String get chatThinking => _p("O'ylayapti…", 'Thinking…', 'Думает…');
+  String get chatWelcome => _p(
+    "Salom! Men diqqat murabbiyingman. Odatlaring, vaqt rejang yoki "
+        "motivatsiya haqida xohlagan narsangni so'ra.",
+    "Hi! I'm your focus coach. Ask me anything about your habits, "
+        'scheduling, or motivation.',
+    'Привет! Я твой наставник по фокусу. Спрашивай о привычках, '
+        'расписании или мотивации.',
+  );
+  String get chatAnalyzePrompt => _p(
+    "Mening diqqat statistikamni tahlil qil va 3 ta aniq, amaliy maslahat ber.",
+    'Analyze my focus stats and give me 3 specific, practical tips.',
+    'Проанализируй мою статистику фокуса и дай 3 конкретных совета.',
+  );
+  String get chatErrorNetwork => _p(
+    "Internetga ulanib bo'lmadi. Aloqani tekshirib, qayta urin.",
+    "Couldn't reach the internet. Check your connection and retry.",
+    'Нет связи с интернетом. Проверь соединение и повтори.',
+  );
+  String get chatErrorKey => _p(
+    "Kalit noto'g'ri ko'rinadi. Uni qayta kiriting.",
+    'The key looks invalid. Please re-enter it.',
+    'Ключ недействителен. Введите его заново.',
+  );
+  String get chatErrorGeneric => _p(
+    "Nimadir xato ketdi. Birozdan so'ng qayta urin.",
+    'Something went wrong. Try again shortly.',
+    'Что-то пошло не так. Попробуй позже.',
+  );
+  String get chatCopy => _p('Nusxalash', 'Copy', 'Копировать');
+  String get chatCopied => _p('Nusxalandi', 'Copied', 'Скопировано');
+  String get chatVoiceHint => _p('Gapiring…', 'Speak…', 'Говорите…');
+  String get chatListening => _p('Tinglayapman…', 'Listening…', 'Слушаю…');
+  String get chatImageBadge => _p('Rasm', 'Image', 'Изображение');
 }
