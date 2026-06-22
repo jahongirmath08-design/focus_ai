@@ -517,4 +517,15 @@ class L10n {
     'Look at this image and advise me.',
     'Посмотри на это изображение и дай совет.',
   );
+
+  // ---------- Suhbat tarixi ----------
+  String get chatHistory =>
+      _p('Suhbatlar tarixi', 'Chat history', 'История чатов');
+  String get chatNewChat => _p('Yangi suhbat', 'New chat', 'Новый чат');
+  String get chatNoHistory =>
+      _p("Hali suhbatlar yo'q", 'No conversations yet', 'Пока нет чатов');
+  String get chatUntitled =>
+      _p('Nomsiz suhbat', 'Untitled chat', 'Без названия');
+  String get chatDeleteConv =>
+      _p("Suhbatni o'chirish", 'Delete chat', 'Удалить чат');
 }

@@ -8,15 +8,25 @@ import '../../../core/state/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../habits/state/habits_notifier.dart';
 import '../data/gemini_service.dart';
+import '../domain/conversation.dart';
+import '../state/conversations_notifier.dart';
 
 /// Jonli AI-murabbiy suhbati (Gemini). Internet + foydalanuvchi kaliti kerak.
 /// [autoPrompt] berilsa — ochilishi bilan o'sha savol avtomatik yuboriladi
 /// ("Aqlli statistika tahlili" kartasi shu orqali ishlaydi).
 class CoachChatScreen extends ConsumerStatefulWidget {
-  const CoachChatScreen({super.key, this.autoPrompt, this.title});
+  const CoachChatScreen({
+    super.key,
+    this.autoPrompt,
+    this.title,
+    this.conversationId,
+    this.category = 'chat',
+  });
 
   final String? autoPrompt;
   final String? title;
+  final String? conversationId;
+  final String category; // tarix shu kategoriya bo'yicha ajratiladi
 
   @override
   ConsumerState<CoachChatScreen> createState() => _CoachChatScreenState();
@@ -37,6 +47,8 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
   String _pendingMime = 'image/jpeg';
   bool _sending = false;
   bool _autoStarted = false;
+  String? _convId;
+  bool _loaded = false;
 
   @override
   void dispose() {
@@ -115,6 +127,10 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
     if ((text.isEmpty && image == null) || key.isEmpty || _sending) return;
     final t = ref.read(l10nProvider);
     final promptText = text.isEmpty ? t.chatImagePrompt : text;
+    _convId ??= ref
+        .read(conversationsProvider.notifier)
+        .create(category: widget.category)
+        .id;
 
     setState(() {
       _messages.add(_Msg(true, promptText, image: image));
@@ -165,7 +181,23 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
         _sending = false;
       });
     }
+    _persist();
     _scrollToEnd();
+  }
+
+  /// Joriy xabarlarni saqlangan suhbatga yozadi (har almashuvdan keyin).
+  void _persist() {
+    final id = _convId;
+    if (id == null) return;
+    final msgs = [for (final m in _messages) ChatMessage(m.fromUser, m.text)];
+    String? title;
+    for (final m in _messages) {
+      if (m.fromUser) {
+        title = m.text;
+        break;
+      }
+    }
+    ref.read(conversationsProvider.notifier).save(id, msgs, title: title);
   }
 
   void _scrollToEnd() {
@@ -255,10 +287,40 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
     }
   }
 
+  void _newChat() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => CoachChatScreen(category: widget.category),
+      ),
+    );
+  }
+
+  void _openHistory() {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => _HistorySheet(category: widget.category),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = ref.watch(l10nProvider);
     final key = ref.watch(geminiKeyProvider).trim();
+
+    // Tarixdan ochilgan suhbat bo'lsa — xabarlarni bir marta yuklaymiz.
+    if (widget.conversationId != null && !_loaded) {
+      _loaded = true;
+      _convId = widget.conversationId;
+      for (final c in ref.read(conversationsProvider)) {
+        if (c.id == widget.conversationId) {
+          for (final m in c.messages) {
+            _messages.add(_Msg(m.fromUser, m.text));
+          }
+          break;
+        }
+      }
+    }
 
     // Kalit bor + autoPrompt berilgan bo'lsa — bir marta avtomatik yuboramiz.
     if (key.isNotEmpty &&
@@ -273,8 +335,23 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title ?? t.proAiChatTitle),
+        title: Text(
+          widget.title ??
+              (widget.category == 'analysis'
+                  ? t.proAiAnalysisTitle
+                  : t.proAiChatTitle),
+        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history_rounded),
+            tooltip: t.chatHistory,
+            onPressed: _openHistory,
+          ),
+          IconButton(
+            icon: const Icon(Icons.add_comment_outlined),
+            tooltip: t.chatNewChat,
+            onPressed: _newChat,
+          ),
           if (key.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.vpn_key_rounded),
@@ -636,6 +713,103 @@ class _SendButton extends StatelessWidget {
           width: 48,
           height: 48,
           child: Icon(Icons.arrow_upward_rounded, color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
+
+/// Suhbatlar tarixi — pastdan chiqadigan ro'yxat (ochish / yangi / o'chirish).
+class _HistorySheet extends ConsumerWidget {
+  const _HistorySheet({required this.category});
+
+  final String category;
+
+  void _open(BuildContext context, {String? conversationId}) {
+    final nav = Navigator.of(context);
+    nav.pop(); // tarix oynasini yopamiz
+    nav.pushReplacement(
+      MaterialPageRoute(
+        builder: (_) =>
+            CoachChatScreen(conversationId: conversationId, category: category),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(l10nProvider);
+    final scheme = Theme.of(context).colorScheme;
+    final convs = ref
+        .watch(conversationsProvider)
+        .where((c) => c.category == category)
+        .toList();
+    return SafeArea(
+      top: false,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 2, 10, 6),
+              child: Row(
+                children: [
+                  Text(
+                    t.chatHistory,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: () => _open(context),
+                    icon: const Icon(Icons.add_comment_outlined, size: 18),
+                    label: Text(t.chatNewChat),
+                  ),
+                ],
+              ),
+            ),
+            if (convs.isEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                child: Text(
+                  t.chatNoHistory,
+                  style: TextStyle(color: scheme.onSurfaceVariant),
+                ),
+              )
+            else
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.only(bottom: 12),
+                  itemCount: convs.length,
+                  itemBuilder: (_, i) {
+                    final c = convs[i];
+                    final title = c.title.isEmpty ? t.chatUntitled : c.title;
+                    return ListTile(
+                      leading: const Icon(Icons.chat_bubble_outline_rounded),
+                      title: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline_rounded),
+                        tooltip: t.chatDeleteConv,
+                        onPressed: () => ref
+                            .read(conversationsProvider.notifier)
+                            .delete(c.id),
+                      ),
+                      onTap: () => _open(context, conversationId: c.id),
+                    );
+                  },
+                ),
+              ),
+          ],
         ),
       ),
     );

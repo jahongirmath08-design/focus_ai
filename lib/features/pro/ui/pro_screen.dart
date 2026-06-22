@@ -89,6 +89,7 @@ class ProScreen extends ConsumerWidget {
                       builder: (_) => CoachChatScreen(
                         title: t.proAiAnalysisTitle,
                         autoPrompt: t.chatAnalyzePrompt,
+                        category: 'analysis',
                       ),
                     ),
                   ),

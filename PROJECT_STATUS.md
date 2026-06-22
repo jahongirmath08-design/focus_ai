@@ -33,7 +33,8 @@
 - Yangi fayllar: `features/pro/{domain/ai_coach.dart, ui/pro_screen.dart, ui/coach_chat_screen.dart, data/gemini_service.dart}`; `app_settings.dart`+`geminiKeyProvider`; `http` paket.
 - **MULTIMODAL ✅** suhbatga rasm (`image_picker`) → Gemini `inline_data`; murabbiy rasmni KO'RIB, foydalanuvchi nima bilan shug'ullanishini fahmlab, real statistikaga bog'lab tahlil qiladi. MIME avtomatik aniqlanadi.
 - **ISHONCHLILIK ✅** model fallback (flash-lite→flash band/kvota bo'lsa) + auto-retry; 429/503/tarmoq uchun chiroyli o'zbekcha xabarlar. SelectableText so'z-nusxalash + "Nusxalash" tugmasi.
-- **Keyingi:** suhbat tarixini saqlash (ChatGPT/Claude kabi); `_embeddedKey`ga kalit → kalitsiz APK.
+- **SUHBAT TARIXI ✅** suhbatlar Hive 'conversations' box'ida saqlanadi (sessiyalararo). AppBar'da tarix + yangi suhbat tugmalari; pastdan ro'yxat (ochish/o'chirish); sarlavha 1-xabardan. Yangi: `pro/{domain/conversation.dart, state/conversations_notifier.dart}`; main.dart 'conversations' box. **Har bo'lim ALOHIDA tarix** (`category`: chat / analysis / kelajakda boshqalar).
+- **Keyingi:** `_embeddedKey`ga kalit → kalitsiz APK; ovoz (speech_to_text); demo video.
 
 ## 2. KEYINGI qadam (NEXT)
 1. **Rasm (multimodal)** — `image_picker` → Gemini `inline_data`; murabbiy rasmni tushunadi/tahlil qiladi.
