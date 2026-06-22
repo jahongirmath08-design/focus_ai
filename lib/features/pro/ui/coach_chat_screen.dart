@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/state/app_settings.dart';
@@ -22,15 +23,18 @@ class CoachChatScreen extends ConsumerStatefulWidget {
 }
 
 class _Msg {
-  _Msg(this.fromUser, this.text);
+  _Msg(this.fromUser, this.text, {this.image});
   final bool fromUser;
   final String text;
+  final Uint8List? image;
 }
 
 class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
   final _controller = TextEditingController();
   final _scroll = ScrollController();
   final _messages = <_Msg>[];
+  Uint8List? _pendingImage;
+  String _pendingMime = 'image/jpeg';
   bool _sending = false;
   bool _autoStarted = false;
 
@@ -92,20 +96,30 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
         'specific: weave in their REAL numbers (minutes, habit names, active '
         'days) from the data below. Keep it to 2–5 warm sentences, ALWAYS '
         'finish your thought completely, and end with one concrete, kind next '
-        'step. Celebrate small wins; never shame. If asked something '
-        'unrelated, gently bring it back to focus, habits, productivity and '
+        'step. Celebrate small wins; never shame. If the user shares an image, '
+        'FIRST briefly say what you actually see, then thoughtfully infer what '
+        'they seem interested in or working on, and connect it warmly and '
+        'specifically to their focus & habits with practical advice (e.g. a '
+        'sport photo → discipline, training routine; study material → focus '
+        'sessions; a schedule → time-blocking). NEVER dismiss the image or say '
+        '"our app is only about focus". If a question is truly unrelated, still '
+        'answer it briefly and kindly, then gently steer back to focus and '
         'wellbeing.\n\nUSER DATA: $data';
   }
 
   Future<void> _send(String raw) async {
     final text = raw.trim();
+    final image = _pendingImage;
+    final mime = _pendingMime;
     final key = ref.read(geminiKeyProvider).trim();
-    if (text.isEmpty || key.isEmpty || _sending) return;
+    if ((text.isEmpty && image == null) || key.isEmpty || _sending) return;
     final t = ref.read(l10nProvider);
+    final promptText = text.isEmpty ? t.chatImagePrompt : text;
 
     setState(() {
-      _messages.add(_Msg(true, text));
+      _messages.add(_Msg(true, promptText, image: image));
       _sending = true;
+      _pendingImage = null;
     });
     _controller.clear();
     _scrollToEnd();
@@ -117,6 +131,8 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
         history: [
           for (final m in _messages) (fromUser: m.fromUser, text: m.text),
         ],
+        imageBytes: image,
+        imageMime: mime,
       );
       if (!mounted) return;
       setState(() {
@@ -125,11 +141,21 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
       });
     } on GeminiException catch (e) {
       if (!mounted) return;
-      final msg = (e.code == 400 || e.code == 401 || e.code == 403)
+      final base = (e.code == 400 || e.code == 401 || e.code == 403)
           ? t.chatErrorKey
+          : e.code == 429
+          ? t.chatErrorQuota
+          : e.code == 503
+          ? t.chatErrorBusy
           : (e.code == -1 ? t.chatErrorNetwork : t.chatErrorGeneric);
+      // Tushunarli xatolarda (kvota/band/tarmoq) xom API matnini ko'rsatmaymiz.
+      final detail = (e.code == 429 || e.code == 503 || e.code == -1)
+          ? ''
+          : e.shortDetail();
       setState(() {
-        _messages.add(_Msg(false, msg));
+        _messages.add(
+          _Msg(false, detail.isEmpty ? base : '$base\n\n⚠️ $detail'),
+        );
         _sending = false;
       });
     } catch (_) {
@@ -152,6 +178,35 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
         );
       }
     });
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1280,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        _pendingImage = bytes;
+        _pendingMime = picked.mimeType ?? _mimeFromName(picked.name);
+      });
+      HapticFeedback.selectionClick();
+    } catch (_) {
+      // Bekor qilindi yoki ruxsat berilmadi — jim o'tamiz.
+    }
+  }
+
+  String _mimeFromName(String name) {
+    final n = name.toLowerCase();
+    if (n.endsWith('.png')) return 'image/png';
+    if (n.endsWith('.webp')) return 'image/webp';
+    if (n.endsWith('.gif')) return 'image/gif';
+    if (n.endsWith('.heic') || n.endsWith('.heif')) return 'image/heic';
+    return 'image/jpeg';
   }
 
   Future<void> _enterKey() async {
@@ -247,6 +302,7 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
           fromUser: m.fromUser,
           copyLabel: t.chatCopy,
           copiedLabel: t.chatCopied,
+          image: m.image,
         ),
       if (_sending) _ThinkingBubble(label: t.chatThinking),
     ];
@@ -262,41 +318,84 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
         ),
         SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    textInputAction: TextInputAction.send,
-                    minLines: 1,
-                    maxLines: 4,
-                    onSubmitted: _send,
-                    decoration: InputDecoration(
-                      hintText: t.chatInputHint,
-                      filled: true,
-                      fillColor: scheme.surfaceContainerHighest.withValues(
-                        alpha: 0.4,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_pendingImage != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.memory(
+                          _pendingImage!,
+                          width: 52,
+                          height: 52,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          t.chatImageReady,
+                          style: TextStyle(
+                            color: scheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        tooltip: t.cancel,
+                        onPressed: () => setState(() => _pendingImage = null),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                _SendButton(
-                  enabled: !_sending,
-                  onTap: () => _send(_controller.text),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 6, 10, 10),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.add_photo_alternate_rounded),
+                      tooltip: t.chatAttachImage,
+                      color: AppColors.accent,
+                      onPressed: _sending ? null : _pickImage,
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        textInputAction: TextInputAction.send,
+                        minLines: 1,
+                        maxLines: 4,
+                        onSubmitted: _send,
+                        decoration: InputDecoration(
+                          hintText: t.chatInputHint,
+                          filled: true,
+                          fillColor: scheme.surfaceContainerHighest.withValues(
+                            alpha: 0.4,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _SendButton(
+                      enabled: !_sending,
+                      onTap: () => _send(_controller.text),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ],
@@ -378,12 +477,14 @@ class _Bubble extends StatelessWidget {
     required this.fromUser,
     required this.copyLabel,
     required this.copiedLabel,
+    this.image,
   });
 
   final String text;
   final bool fromUser;
   final String copyLabel;
   final String copiedLabel;
+  final Uint8List? image;
 
   void _copyAll(BuildContext context) {
     HapticFeedback.selectionClick();
@@ -423,6 +524,18 @@ class _Bubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Biriktirilgan rasm (agar bo'lsa).
+            if (image != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 260),
+                    child: Image.memory(image!, fit: BoxFit.contain),
+                  ),
+                ),
+              ),
             // So'z-darajada tanlash: istalgan so'zni belgilab nusxalash mumkin.
             SelectableText(
               text,

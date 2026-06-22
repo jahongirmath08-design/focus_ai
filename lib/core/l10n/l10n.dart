@@ -494,9 +494,27 @@ class L10n {
     'Something went wrong. Try again shortly.',
     'Что-то пошло не так. Попробуй позже.',
   );
+  String get chatErrorQuota => _p(
+    "Bepul AI limiti vaqtincha tugadi. Bir-ikki daqiqadan so'ng yoki ertaga qayta urin.",
+    'The free AI limit is temporarily used up. Try again in a minute or tomorrow.',
+    'Бесплатный лимит ИИ временно исчерпан. Попробуй через минуту или завтра.',
+  );
+  String get chatErrorBusy => _p(
+    "AI hozir juda band. Bir oz kutib qayta yuboring.",
+    'The AI is very busy right now. Wait a moment and try again.',
+    'ИИ сейчас очень занят. Подожди немного и повтори.',
+  );
   String get chatCopy => _p('Nusxalash', 'Copy', 'Копировать');
   String get chatCopied => _p('Nusxalandi', 'Copied', 'Скопировано');
   String get chatVoiceHint => _p('Gapiring…', 'Speak…', 'Говорите…');
   String get chatListening => _p('Tinglayapman…', 'Listening…', 'Слушаю…');
   String get chatImageBadge => _p('Rasm', 'Image', 'Изображение');
+  String get chatAttachImage =>
+      _p('Rasm biriktirish', 'Attach image', 'Прикрепить изображение');
+  String get chatImageReady => _p('Rasm tayyor', 'Image ready', 'Фото готово');
+  String get chatImagePrompt => _p(
+    'Bu rasmga qarab menga maslahat ber.',
+    'Look at this image and advise me.',
+    'Посмотри на это изображение и дай совет.',
+  );
 }

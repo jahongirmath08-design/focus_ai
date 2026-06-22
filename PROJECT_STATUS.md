@@ -31,6 +31,9 @@
 - **PRO BO'LIM ✅** 4-tab "Pro" (premium gradient hub). Offline AI-murabbiy (statistikadan shaxsiy tahlil, kalitsiz) + online teaser kartalar. 3 til.
 - **JONLI AI (Gemini) ✅** `gemini-2.5-flash`, kalit `x-goog-api-key` sarlavhada (URL emas), kalit faqat qurilmada (Hive). "Thinking" o'chirilgan → javob TO'LIQ. Murabbiy real statistikani biladi. Suhbat: SelectableText so'z-tanlash + "Nusxalash" tugmasi + haptika. Kalitsiz fallback (`GeminiKeyNotifier._embeddedKey`) tayyor.
 - Yangi fayllar: `features/pro/{domain/ai_coach.dart, ui/pro_screen.dart, ui/coach_chat_screen.dart, data/gemini_service.dart}`; `app_settings.dart`+`geminiKeyProvider`; `http` paket.
+- **MULTIMODAL ✅** suhbatga rasm (`image_picker`) → Gemini `inline_data`; murabbiy rasmni KO'RIB, foydalanuvchi nima bilan shug'ullanishini fahmlab, real statistikaga bog'lab tahlil qiladi. MIME avtomatik aniqlanadi.
+- **ISHONCHLILIK ✅** model fallback (flash-lite→flash band/kvota bo'lsa) + auto-retry; 429/503/tarmoq uchun chiroyli o'zbekcha xabarlar. SelectableText so'z-nusxalash + "Nusxalash" tugmasi.
+- **Keyingi:** suhbat tarixini saqlash (ChatGPT/Claude kabi); `_embeddedKey`ga kalit → kalitsiz APK.
 
 ## 2. KEYINGI qadam (NEXT)
 1. **Rasm (multimodal)** — `image_picker` → Gemini `inline_data`; murabbiy rasmni tushunadi/tahlil qiladi.
