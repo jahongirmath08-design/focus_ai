@@ -34,7 +34,9 @@
 - **MULTIMODAL ✅** suhbatga rasm (`image_picker`) → Gemini `inline_data`; murabbiy rasmni KO'RIB, foydalanuvchi nima bilan shug'ullanishini fahmlab, real statistikaga bog'lab tahlil qiladi. MIME avtomatik aniqlanadi.
 - **ISHONCHLILIK ✅** model fallback (flash-lite→flash band/kvota bo'lsa) + auto-retry; 429/503/tarmoq uchun chiroyli o'zbekcha xabarlar. SelectableText so'z-nusxalash + "Nusxalash" tugmasi.
 - **SUHBAT TARIXI ✅** suhbatlar Hive 'conversations' box'ida saqlanadi (sessiyalararo). AppBar'da tarix + yangi suhbat tugmalari; pastdan ro'yxat (ochish/o'chirish); sarlavha 1-xabardan. Yangi: `pro/{domain/conversation.dart, state/conversations_notifier.dart}`; main.dart 'conversations' box. **Har bo'lim ALOHIDA tarix** (`category`: chat / analysis / kelajakda boshqalar).
-- **Keyingi:** `_embeddedKey`ga kalit → kalitsiz APK; ovoz (speech_to_text); demo video.
+- **OVOZLI KIRITISH ✅** mikrofon → matn (`speech_to_text`, tilga mos uz/en/ru). Suhbat kiritishida mic tugmasi + "Tinglayapman" holati. Manifest: **INTERNET + RECORD_AUDIO** ruxsatlari (release APK uchun MUHIM — busiz AI ishlamaydi!).
+- **KALIT YO'RIQNOMA ✅** ikonkali 3 qadam (🌐/🔑/📋) + "bepul·bir marta·shu qurilmada"; har bo'limga o'z salomi (murabbiy vs tahlilchi).
+- **Keyingi:** yangi yakuniy APK (barcha funksiyalar); demo video. (Bulut sinxron / do'stlar challenge — konkursdan keyin, backend kerak.)
 
 ## 2. KEYINGI qadam (NEXT)
 1. **Rasm (multimodal)** — `image_picker` → Gemini `inline_data`; murabbiy rasmni tushunadi/tahlil qiladi.

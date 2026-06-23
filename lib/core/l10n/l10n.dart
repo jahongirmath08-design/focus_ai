@@ -474,6 +474,14 @@ class L10n {
     'Привет! Я твой наставник по фокусу. Спрашивай о привычках, '
         'расписании или мотивации.',
   );
+  String get chatWelcomeAnalysis => _p(
+    "Salom! Men statistika tahlilchingizman. Diqqat ma'lumotlaringizni "
+        "ko'rib, aniq va amaliy maslahatlar beraman.",
+    "Hi! I'm your stats analyst. I'll review your focus data and give you "
+        'specific, practical advice.',
+    'Привет! Я твой аналитик. Изучу твои данные о фокусе и дам конкретные '
+        'практичные советы.',
+  );
   String get chatAnalyzePrompt => _p(
     "Mening diqqat statistikamni tahlil qil va 3 ta aniq, amaliy maslahat ber.",
     'Analyze my focus stats and give me 3 specific, practical tips.',
@@ -508,6 +516,11 @@ class L10n {
   String get chatCopied => _p('Nusxalandi', 'Copied', 'Скопировано');
   String get chatVoiceHint => _p('Gapiring…', 'Speak…', 'Говорите…');
   String get chatListening => _p('Tinglayapman…', 'Listening…', 'Слушаю…');
+  String get chatMicUnavailable => _p(
+    'Mikrofon ishlamadi yoki ruxsat berilmadi.',
+    'Microphone unavailable or permission denied.',
+    'Микрофон недоступен или нет разрешения.',
+  );
   String get chatImageBadge => _p('Rasm', 'Image', 'Изображение');
   String get chatAttachImage =>
       _p('Rasm biriktirish', 'Attach image', 'Прикрепить изображение');
@@ -528,4 +541,24 @@ class L10n {
       _p('Nomsiz suhbat', 'Untitled chat', 'Без названия');
   String get chatDeleteConv =>
       _p("Suhbatni o'chirish", 'Delete chat', 'Удалить чат');
+  String get chatSetupStep1 => _p(
+    "aistudio.google.com'ni oching va Google bilan kiring",
+    'Open aistudio.google.com and sign in with Google',
+    'Откройте aistudio.google.com и войдите через Google',
+  );
+  String get chatSetupStep2 => _p(
+    '"Create API key" (Kalit yaratish) tugmasini bosing',
+    'Tap "Create API key"',
+    'Нажмите "Create API key"',
+  );
+  String get chatSetupStep3 => _p(
+    'Kalitni nusxalab, quyidagi tugma orqali joylang',
+    'Copy the key and paste it via the button below',
+    'Скопируйте ключ и вставьте его кнопкой ниже',
+  );
+  String get chatSetupNote => _p(
+    'Bepul · bir marta · kalit faqat shu qurilmada saqlanadi',
+    'Free · one-time · the key stays only on this device',
+    'Бесплатно · один раз · ключ хранится только на этом устройстве',
+  );
 }

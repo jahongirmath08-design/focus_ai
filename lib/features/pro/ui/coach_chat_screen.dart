@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/state/app_settings.dart';
@@ -49,9 +50,15 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
   bool _autoStarted = false;
   String? _convId;
   bool _loaded = false;
+  final SpeechToText _speech = SpeechToText();
+  bool _speechReady = false;
+  bool _listening = false;
+  String _speechBase =
+      ''; // mikrofon boshlangandagi mavjud matn (ustiga qo'shamiz)
 
   @override
   void dispose() {
+    _speech.cancel();
     _controller.dispose();
     _scroll.dispose();
     super.dispose();
@@ -241,6 +248,58 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
     return 'image/jpeg';
   }
 
+  /// Mikrofon: gapni matnga aylantiradi (jonli, tilga mos). Web brauzer mic
+  /// so'raydi; Android'da RECORD_AUDIO ruxsatini speech_to_text o'zi so'raydi.
+  Future<void> _toggleMic() async {
+    if (_listening) {
+      await _speech.stop();
+      if (mounted) setState(() => _listening = false);
+      return;
+    }
+    if (!_speechReady) {
+      _speechReady = await _speech.initialize(
+        onStatus: (s) {
+          if ((s == 'done' || s == 'notListening') && mounted) {
+            setState(() => _listening = false);
+          }
+        },
+        onError: (_) {
+          if (mounted) setState(() => _listening = false);
+        },
+      );
+    }
+    if (!_speechReady) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ref.read(l10nProvider).chatMicUnavailable)),
+        );
+      }
+      return; // mikrofon yo'q yoki ruxsat berilmadi
+    }
+    final locale = switch (ref.read(languageProvider)) {
+      AppLanguage.uz => 'uz_UZ',
+      AppLanguage.en => 'en_US',
+      AppLanguage.ru => 'ru_RU',
+    };
+    final base = _controller.text.trim();
+    _speechBase = base.isEmpty ? '' : '$base ';
+    HapticFeedback.selectionClick();
+    setState(() => _listening = true);
+    await _speech.listen(
+      onResult: (r) {
+        if (!mounted) return;
+        final text = _speechBase + r.recognizedWords;
+        setState(() {
+          _controller.value = TextEditingValue(
+            text: text,
+            selection: TextSelection.collapsed(offset: text.length),
+          );
+        });
+      },
+      localeId: locale,
+    );
+  }
+
   Future<void> _enterKey() async {
     final t = ref.read(l10nProvider);
     final controller = TextEditingController(text: ref.read(geminiKeyProvider));
@@ -368,7 +427,9 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
     final scheme = Theme.of(context).colorScheme;
     final items = <Widget>[
       _Bubble(
-        text: t.chatWelcome,
+        text: widget.category == 'analysis'
+            ? t.chatWelcomeAnalysis
+            : t.chatWelcome,
         fromUser: false,
         copyLabel: t.chatCopy,
         copiedLabel: t.chatCopied,
@@ -440,6 +501,14 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
                       color: AppColors.accent,
                       onPressed: _sending ? null : _pickImage,
                     ),
+                    IconButton(
+                      icon: Icon(
+                        _listening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                      ),
+                      tooltip: t.chatVoiceHint,
+                      color: _listening ? Colors.redAccent : AppColors.accent,
+                      onPressed: _sending ? null : _toggleMic,
+                    ),
                     Expanded(
                       child: TextField(
                         controller: _controller,
@@ -448,7 +517,9 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
                         maxLines: 4,
                         onSubmitted: _send,
                         decoration: InputDecoration(
-                          hintText: t.chatInputHint,
+                          hintText: _listening
+                              ? t.chatListening
+                              : t.chatInputHint,
                           filled: true,
                           fillColor: scheme.surfaceContainerHighest.withValues(
                             alpha: 0.4,
@@ -525,17 +596,34 @@ class _SetupView extends StatelessWidget {
                 color: scheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              t.chatGetKeyHint,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: AppColors.accent,
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _StepRow(icon: Icons.public_rounded, text: t.chatSetupStep1),
+                  const SizedBox(height: 12),
+                  _StepRow(icon: Icons.vpn_key_rounded, text: t.chatSetupStep2),
+                  const SizedBox(height: 12),
+                  _StepRow(
+                    icon: Icons.content_paste_rounded,
+                    text: t.chatSetupStep3,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 14),
+            Text(
+              t.chatSetupNote,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 20),
             FilledButton.icon(
               onPressed: onEnter,
               icon: const Icon(Icons.vpn_key_rounded, size: 18),
@@ -544,6 +632,44 @@ class _SetupView extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Kalit olish yo'riqnomasi uchun bitta raqamli qadam qatori.
+class _StepRow extends StatelessWidget {
+  const _StepRow({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.18),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: AppColors.accent, size: 19),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13.5,
+              height: 1.3,
+              color: scheme.onSurface,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
