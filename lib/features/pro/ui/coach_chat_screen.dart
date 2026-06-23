@@ -296,7 +296,7 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
           );
         });
       },
-      localeId: locale,
+      listenOptions: SpeechListenOptions(localeId: locale),
     );
   }
 
