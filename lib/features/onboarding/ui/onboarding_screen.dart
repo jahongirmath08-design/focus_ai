@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/state/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/uzbek_motif.dart';
 import '../../active_session/ui/light_arc.dart';
 
 /// Interaktiv onboarding — "diqqatni nurga aylantirish" metaforasini hikoya qiladi.
@@ -98,6 +99,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                 radius: 1.1,
                 colors: [pageColor.withValues(alpha: 0.18), Colors.transparent],
               ),
+            ),
+          ),
+          // Milliy shamsa naqshi — onboarding foni (yengil).
+          Positioned.fill(
+            child: UzbekMotif(
+              color: Colors.white,
+              type: MotifType.star8,
+              opacity: 0.05,
             ),
           ),
           SafeArea(
