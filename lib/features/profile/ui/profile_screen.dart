@@ -109,6 +109,35 @@ class ProfileScreen extends ConsumerWidget {
             subtitle: t.aboutSub,
             onTap: () => _showAbout(context, t),
           ),
+          _Tile(
+            icon: Icons.logout_rounded,
+            title: t.logout,
+            subtitle: t.logoutSubtitle,
+            onTap: () => _confirmLogout(context, ref, t),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmLogout(BuildContext context, WidgetRef ref, L10n t) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.logout),
+        content: Text(t.authNote),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(t.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ref.read(authDoneProvider.notifier).logout();
+            },
+            child: Text(t.logout),
+          ),
         ],
       ),
     );

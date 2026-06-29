@@ -191,6 +191,36 @@ class L10n {
   String get avatarLabel => _p('Belgi', 'Emoji', 'Значок');
   String get licenses => _p('Litsenziyalar', 'Licenses', 'Лицензии');
 
+  // ---------- Kirish (auth / mehmon rejimi) ----------
+  String get authWelcome => _p('Xush kelibsiz', 'Welcome', 'Добро пожаловать');
+  String get authSubtitle => _p(
+    "Diqqatni nurga aylantir. Ro'yxatdan o'tish shart emas.",
+    'Turn focus into light. No sign-up needed.',
+    'Преврати фокус в свет. Регистрация не нужна.',
+  );
+  String get authNameOptional => _p(
+    'Ismingiz (ixtiyoriy)',
+    'Your name (optional)',
+    'Ваше имя (необязательно)',
+  );
+  String get authGuestButton => _p(
+    'Mehmon sifatida davom etish',
+    'Continue as guest',
+    'Продолжить как гость',
+  );
+  String get authContinue => _p('Davom etish', 'Continue', 'Продолжить');
+  String get authNote => _p(
+    "Hamma narsa shu qurilmada saqlanadi — internet shart emas.",
+    'Everything stays on this device — no internet needed.',
+    'Всё хранится на этом устройстве — интернет не нужен.',
+  );
+  String get logout => _p('Chiqish', 'Log out', 'Выйти');
+  String get logoutSubtitle => _p(
+    'Kirish ekraniga qaytish',
+    'Return to the welcome screen',
+    'Вернуться к экрану входа',
+  );
+
   // ---------- Onboarding ----------
   String get onbSkip => _p("O'tkazib yuborish", 'Skip', 'Пропустить');
   String get onbNext => _p('Keyingi', 'Next', 'Далее');

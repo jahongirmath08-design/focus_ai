@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
+import 'core/state/app_settings.dart';
 import 'core/theme/app_colors.dart';
+import 'features/auth/ui/auth_screen.dart';
 import 'features/home/ui/home_shell.dart';
 import 'features/onboarding/ui/onboarding_screen.dart';
 
@@ -50,14 +52,14 @@ class FocusAiApp extends StatelessWidget {
 
 /// Onboarding ko'rilganmi — shunga qarab birinchi ekranni tanlaydi.
 /// Ko'rilgani Hive 'settings' box'ida saqlanadi (bir marta chiqadi).
-class RootGate extends StatefulWidget {
+class RootGate extends ConsumerStatefulWidget {
   const RootGate({super.key});
 
   @override
-  State<RootGate> createState() => _RootGateState();
+  ConsumerState<RootGate> createState() => _RootGateState();
 }
 
-class _RootGateState extends State<RootGate> {
+class _RootGateState extends ConsumerState<RootGate> {
   late bool _showOnboarding;
 
   @override
@@ -84,15 +86,23 @@ class _RootGateState extends State<RootGate> {
 
   @override
   Widget build(BuildContext context) {
+    final authDone = ref.watch(authDoneProvider);
+    final Widget child;
+    if (_showOnboarding) {
+      child = OnboardingScreen(
+        key: const ValueKey('onboarding'),
+        onDone: _completeOnboarding,
+      );
+    } else if (!authDone) {
+      // TZ 3.2 — kirish (mehmon rejimi) ekrani.
+      child = const AuthScreen(key: ValueKey('auth'));
+    } else {
+      child = const HomeShell(key: ValueKey('home'));
+    }
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 500),
       switchInCurve: Curves.easeOut,
-      child: _showOnboarding
-          ? OnboardingScreen(
-              key: const ValueKey('onboarding'),
-              onDone: _completeOnboarding,
-            )
-          : const HomeShell(key: ValueKey('home')),
+      child: child,
     );
   }
 }

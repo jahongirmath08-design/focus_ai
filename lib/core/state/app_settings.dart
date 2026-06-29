@@ -88,6 +88,37 @@ final historyProvider = Provider<HistoryRepository?>((ref) {
   }
 });
 
+/// Kirildimi (mehmon rejimi ham hisoblanadi) — Hive 'settings' 'auth_done'.
+/// RootGate shunga qarab auth ekranини yoki home'ni ko'rsatadi.
+final authDoneProvider = NotifierProvider<AuthDoneNotifier, bool>(
+  AuthDoneNotifier.new,
+);
+
+class AuthDoneNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    try {
+      return Hive.box('settings').get('auth_done', defaultValue: false) as bool;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void signIn() {
+    state = true;
+    try {
+      Hive.box('settings').put('auth_done', true);
+    } catch (_) {}
+  }
+
+  void logout() {
+    state = false;
+    try {
+      Hive.box('settings').put('auth_done', false);
+    } catch (_) {}
+  }
+}
+
 /// Gemini API kaliti — foydalanuvchi o'zi kiritadi (online jonli AI uchun).
 /// FAQAT shu qurilmada (Hive 'settings') saqlanadi — hech qayerga yuborilmaydi.
 final geminiKeyProvider = NotifierProvider<GeminiKeyNotifier, String>(
