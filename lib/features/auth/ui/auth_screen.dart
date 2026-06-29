@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/l10n/l10n.dart';
 import '../../../core/state/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/uzbek_motif.dart';
