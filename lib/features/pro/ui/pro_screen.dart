@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/state/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/uzbek_motif.dart';
 import '../../habits/state/habits_notifier.dart';
 import '../domain/ai_coach.dart';
 import 'coach_chat_screen.dart';
@@ -135,7 +136,7 @@ class _Header extends StatelessWidget {
     final top = MediaQuery.of(context).padding.top;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(20, top + 28, 20, 28),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [gradA, gradB],
@@ -151,31 +152,44 @@ class _Header extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            children: [
-              const Icon(Icons.auto_awesome, color: Colors.white, size: 26),
-              const SizedBox(width: 10),
-              Text(
-                t.proTitle,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
+          // Milliy geometrik naqsh (Samarqand yulduz-koshinlari) — fon.
+          Positioned.fill(child: UzbekMotif(color: Colors.white, opacity: 0.1)),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, top + 28, 20, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      t.proTitle,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            t.proSubtitle,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 14,
-              height: 1.3,
+                const SizedBox(height: 8),
+                Text(
+                  t.proSubtitle,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 14,
+                    height: 1.3,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

@@ -24,6 +24,7 @@ class ProfileScreen extends ConsumerWidget {
     final displayName = userName.trim().isEmpty ? t.guest : userName.trim();
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text(t.profileTitle), centerTitle: false),
       body: ListView(
         padding: const EdgeInsets.all(20),

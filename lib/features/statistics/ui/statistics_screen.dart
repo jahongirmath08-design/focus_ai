@@ -68,6 +68,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     final maxSec = entries.isEmpty ? 0.0 : entries.first.value;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text(t.statsTitle), centerTitle: false),
       body: habits.isEmpty
           ? Center(
