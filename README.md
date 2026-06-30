@@ -25,8 +25,13 @@ ilovaning **joni**, va aynan shu bizni har qanday shablon kuzatuvchidan ajratadi
 - **Statistika** — diqqat taqsimoti **donut** (interaktiv) + **Kunlik / Haftalik / Oylik / Yillik** + focus-tarix.
 - **Shaxsiylashtirish** — ism + emoji avatar, har odatga emoji, 12 rang, qo'lda vaqt kiritish.
 - **Timestamp-aniq taymer** — kill/restore'da vaqt yo'qolmaydi; maqsadga **avtomatik to'xtaydi** (oshmaydi).
-- **Premium tipografiya** (Space Grotesk) + brendlangan yuklanish ekrani.
+- **Premium tipografiya** (Space Grotesk) + brendlangan yuklanish ekrani va **ilova belgisi**.
 - **Lokal-first / mehmon rejimi** — ro'yxatdan o'tish shart emas, hammasi qurilmada (Hive).
+- **AI murabbiy (Pro)** — **oflayn** tahlil + **onlayn Google Gemini** suhbati, **rasm tahlili** (multimodal), **ovozli kiritish** va suhbat tarixi. Kalit foydalanuvchida (BYOK).
+- **Seriya 🔥 + faollik xaritasi** — ketma-ket kunlar va GitHub uslubidagi heatmap.
+- **Yakunlash** — odatni bugun bajarilgan deb belgilaydi; vaqt **halol** qoladi.
+- **Yorug' / tungi mavzu** — almashtiriladi, tanlov saqlanadi.
+- **Milliy naqshlar** — shamsa, panjara, ikat va suzani motivlari (har sahifaga moslab).
 
 ## Nega g'olib (raqiblardan ustun)
 
@@ -38,6 +43,9 @@ ilovaning **joni**, va aynan shu bizni har qanday shablon kuzatuvchidan ajratadi
 | Sensor | yo'q | **Deep Focus (yuztuban)** |
 | Til | aralash/bitta | **3 til, benuqson** |
 | Jami/foiz | ba'zan xato | **har doim mos** |
+| AI murabbiy | yo'q / pulli | **oflayn + Gemini (bepul)** |
+| Seriya | oddiy raqam | **🔥 + faollik xaritasi** |
+| Mavzu | bittasi | **yorug' + tungi** |
 
 ## Arxitektura
 
@@ -53,10 +61,12 @@ lib/
     dashboard/      Bugun ekrani + odat qo'shish
     active_session/ immersiv sessiya + light_arc (signature)
     onboarding/     3 sahifali tanishtiruv
-    home/           pastki navigatsiya (Bugun/Statistika/Profil)
-    statistics/     donut + davr tanlagich
-    profile/        til + ism + emoji
-    history/        focus-tarix (kunlik/haftalik/oylik/yillik)
+    auth/           kirish (mehmon rejimi)
+    home/           pastki navigatsiya (Bugun/Statistika/Pro/Profil)
+    statistics/     donut + streak + heatmap
+    pro/            AI murabbiy (oflayn + Gemini, rasm, ovoz)
+    profile/        til + mavzu + ism + emoji
+    history/        focus-tarix (streak, heatmap, davrlar)
 test/             focus_session, habit, widget testlari
 ```
 
@@ -68,7 +78,7 @@ Manfiy yo'q · maqsaddan oshmaydi · kill/restore'da timestamp'dan tiklanadi · 
 
 ## Texnologiyalar
 
-Flutter 3.44 / Dart 3.12 · Riverpod · Hive CE · fl_chart · google_fonts · sensors_plus.
+Flutter 3.44 / Dart 3.12 · Riverpod · Hive CE · fl_chart · sensors_plus · speech_to_text · image_picker · Google Gemini API. Shrift (Space Grotesk) ilova ichiga joylangan — internetsiz ham to'g'ri chiqadi.
 
 ## Ishga tushirish
 
@@ -80,6 +90,16 @@ flutter test                                  # unit + widget testlar
 flutter build apk --release                   # Android APK
 ```
 
+## AI murabbiyni yoqish (ixtiyoriy)
+
+Oflayn murabbiy **kalitsiz** ishlaydi. Onlayn (Gemini) suhbat uchun:
+1. [Google AI Studio](https://aistudio.google.com/app/apikey) dan bepul kalit oling.
+2. Ilovada **Pro → murabbiy** bo'limiga bir marta kiriting — kalit faqat shu qurilmada saqlanadi.
+
 ## Maxfiylik
 
 Hamma ma'lumot **shu qurilmada** saqlanadi (Hive). Server yo'q, hisob yo'q, kuzatuv yo'q.
+
+---
+
+**Muallif:** Jahongir Sattorov · Tanlov uchun yaratilgan.
