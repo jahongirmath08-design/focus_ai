@@ -78,6 +78,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   @override
   Widget build(BuildContext context) {
     final t = ref.watch(l10nProvider);
+    final scheme = Theme.of(context).colorScheme;
     final habits = ref.watch(habitsProvider);
     final notifier = ref.read(habitsProvider.notifier);
     final matches = habits.where((h) => h.id == widget.habitId);
@@ -162,7 +163,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                                 ),
                               ),
                         style: TextStyle(
-                          color: done ? color : Colors.white54,
+                          color: done ? color : scheme.onSurfaceVariant,
                           fontWeight: done
                               ? FontWeight.w600
                               : FontWeight.w400,
@@ -257,9 +258,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                   ),
                   label: Text(t.deepFocus),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: _deepFocus ? color : Colors.white70,
+                    foregroundColor: _deepFocus ? color : scheme.onSurfaceVariant,
                     side: BorderSide(
-                      color: _deepFocus ? color : Colors.white24,
+                      color: _deepFocus ? color : scheme.outlineVariant,
                     ),
                   ),
                 ),
@@ -269,7 +270,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                     _faceDown ? t.deepFocusActive : t.deepFocusHint,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: _faceDown ? color : Colors.white54,
+                      color: _faceDown ? color : scheme.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),

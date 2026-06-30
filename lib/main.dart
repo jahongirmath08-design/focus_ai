@@ -22,30 +22,32 @@ Future<void> main() async {
   } catch (e, st) {
     debugPrint('HIVE INIT muammosi (ilova saqlashsiz davom etadi): $e\n$st');
   }
-  runApp(const FocusAiApp());
+  runApp(const ProviderScope(child: FocusAiApp()));
 }
 
-class FocusAiApp extends StatelessWidget {
+class FocusAiApp extends ConsumerWidget {
   const FocusAiApp({super.key});
 
+  ThemeData _theme(Brightness brightness) => ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.accent,
+      brightness: brightness,
+    ),
+    // Premium tipografiya — Space Grotesk (ilova ichiga joylangan, offline ham).
+    fontFamily: 'SpaceGrotesk',
+  );
+
   @override
-  Widget build(BuildContext context) {
-    final base = ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.accent,
-        brightness: Brightness.dark,
-      ),
-      // Premium tipografiya — Space Grotesk (ilova ichiga joylangan, offline ham).
-      fontFamily: 'SpaceGrotesk',
-    );
-    return ProviderScope(
-      child: MaterialApp(
-        title: 'Focus AI',
-        debugShowCheckedModeBanner: false,
-        theme: base,
-        home: const RootGate(),
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(themeModeProvider);
+    return MaterialApp(
+      title: 'Focus AI',
+      debugShowCheckedModeBanner: false,
+      theme: _theme(Brightness.light),
+      darkTheme: _theme(Brightness.dark),
+      themeMode: mode,
+      home: const RootGate(),
     );
   }
 }

@@ -183,6 +183,12 @@ class L10n {
   );
   String get wipeConfirm => _p("Ha, o'chirish", 'Yes, erase', 'Да, стереть');
 
+  // ---------- Mavzu (theme) ----------
+  String get themeLabel => _p('Mavzu', 'Theme', 'Тема');
+  String get themeLight => _p("Yorug'", 'Light', 'Светлая');
+  String get themeDark => _p('Tungi', 'Dark', 'Тёмная');
+  String get themeSystem => _p('Tizim', 'System', 'Система');
+
   // ---------- Profil ----------
   String get profileTitle => _p('Profil', 'Profile', 'Профиль');
   String get guest => _p('Mehmon', 'Guest', 'Гость');

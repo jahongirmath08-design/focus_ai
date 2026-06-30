@@ -21,6 +21,7 @@ class ProfileScreen extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final t = ref.watch(l10nProvider);
     final lang = ref.watch(languageProvider);
+    final themeMode = ref.watch(themeModeProvider);
     final userName = ref.watch(userNameProvider);
     final emoji = ref.watch(userEmojiProvider);
     final displayName = userName.trim().isEmpty ? t.guest : userName.trim();
@@ -90,6 +91,33 @@ class ProfileScreen extends ConsumerWidget {
                   selected: lang == l,
                   onSelected: (_) =>
                       ref.read(languageProvider.notifier).setLanguage(l),
+                ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            t.themeLabel.toUpperCase(),
+            style: TextStyle(
+              fontSize: 12,
+              letterSpacing: 1.2,
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            children: [
+              for (final m in ThemeMode.values)
+                ChoiceChip(
+                  label: Text(switch (m) {
+                    ThemeMode.light => t.themeLight,
+                    ThemeMode.dark => t.themeDark,
+                    ThemeMode.system => t.themeSystem,
+                  }),
+                  selected: themeMode == m,
+                  onSelected: (_) =>
+                      ref.read(themeModeProvider.notifier).setMode(m),
                 ),
             ],
           ),

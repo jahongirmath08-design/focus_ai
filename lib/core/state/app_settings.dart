@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
@@ -149,4 +150,43 @@ class GeminiKeyNotifier extends Notifier<String> {
       Hive.box('settings').put('gemini_key', k);
     } catch (_) {}
   }
+}
+
+/// Mavzu rejimi (Tungi / Yorug' / Tizim) — Hive 'settings' 'theme_mode'.
+/// Standart: tungi (ilovaning imzo ko'rinishi).
+final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);
+
+class ThemeModeNotifier extends Notifier<ThemeMode> {
+  @override
+  ThemeMode build() {
+    try {
+      final v =
+          Hive.box('settings').get('theme_mode', defaultValue: 'dark')
+              as String;
+      return _fromString(v);
+    } catch (_) {
+      return ThemeMode.dark;
+    }
+  }
+
+  void setMode(ThemeMode m) {
+    state = m;
+    try {
+      Hive.box('settings').put('theme_mode', _toString(m));
+    } catch (_) {}
+  }
+
+  static ThemeMode _fromString(String v) => switch (v) {
+    'light' => ThemeMode.light,
+    'system' => ThemeMode.system,
+    _ => ThemeMode.dark,
+  };
+
+  static String _toString(ThemeMode m) => switch (m) {
+    ThemeMode.light => 'light',
+    ThemeMode.system => 'system',
+    _ => 'dark',
+  };
 }
