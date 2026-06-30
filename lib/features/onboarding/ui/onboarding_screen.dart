@@ -88,6 +88,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     final pageColor = pages[_index].color;
 
     return Scaffold(
+      // Onboarding — har doim to'q "kinematik intro" (mavzudan qat'i nazar),
+      // shunda yorug'lik yoyi va oq matnlar har doim aniq ko'rinadi.
+      backgroundColor: const Color(0xFF0F0D17),
       body: Stack(
         children: [
           // Ambient fon — joriy sahifa rangiga moslashadi.
@@ -281,6 +284,7 @@ class _OnbPageView extends StatelessWidget {
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
                       height: 1.2,
+                      color: Colors.white,
                     ),
                   ),
                 ),

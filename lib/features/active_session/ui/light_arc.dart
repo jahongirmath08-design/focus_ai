@@ -133,7 +133,8 @@ class _LightArcPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
         ..strokeCap = StrokeCap.round
-        ..color = Colors.white.withValues(alpha: 0.06),
+        // Yo'lak — odat rangining past shaffofi (yorug'/tungi ikkalasida ko'rinadi).
+        ..color = color.withValues(alpha: 0.14),
     );
 
     final sweep = (complete ? 1.0 : progress) * 2 * math.pi;
@@ -348,7 +349,7 @@ class _MiniArcPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
         ..strokeCap = StrokeCap.round
-        ..color = Colors.white.withValues(alpha: 0.07),
+        ..color = color.withValues(alpha: 0.16),
     );
 
     final sweep = (complete ? 1.0 : progress) * 2 * math.pi;

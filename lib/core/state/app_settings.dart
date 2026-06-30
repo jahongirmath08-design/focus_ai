@@ -180,13 +180,11 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 
   static ThemeMode _fromString(String v) => switch (v) {
     'light' => ThemeMode.light,
-    'system' => ThemeMode.system,
     _ => ThemeMode.dark,
   };
 
   static String _toString(ThemeMode m) => switch (m) {
     ThemeMode.light => 'light',
-    ThemeMode.system => 'system',
     _ => 'dark',
   };
 }

@@ -108,13 +108,9 @@ class ProfileScreen extends ConsumerWidget {
           Wrap(
             spacing: 10,
             children: [
-              for (final m in ThemeMode.values)
+              for (final m in const [ThemeMode.light, ThemeMode.dark])
                 ChoiceChip(
-                  label: Text(switch (m) {
-                    ThemeMode.light => t.themeLight,
-                    ThemeMode.dark => t.themeDark,
-                    ThemeMode.system => t.themeSystem,
-                  }),
+                  label: Text(m == ThemeMode.light ? t.themeLight : t.themeDark),
                   selected: themeMode == m,
                   onSelected: (_) =>
                       ref.read(themeModeProvider.notifier).setMode(m),
