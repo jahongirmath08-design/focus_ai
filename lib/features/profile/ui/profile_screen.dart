@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/state/app_settings.dart';
+import '../../habits/state/habits_notifier.dart';
 import '../../onboarding/ui/onboarding_screen.dart';
+import '../../pro/state/conversations_notifier.dart';
 
 /// Profil — emoji avatar + ism + til tanlagich + tanishtiruv + ilova haqida.
 class ProfileScreen extends ConsumerWidget {
@@ -125,22 +127,69 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(t.logout),
-        content: Text(t.authNote),
+        content: Text(t.logoutChoose),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(t.cancel),
+          ),
+          // Ma'lumotni saqlab chiqish (yumshoq).
+          FilledButton.tonal(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ref.read(authDoneProvider.notifier).logout();
+            },
+            child: Text(t.logoutKeep),
+          ),
+          // Chiqish + hammasini o'chirish — qo'shimcha (kuchli) tasdiq so'raydi.
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _confirmWipe(context, ref, t);
+            },
+            child: Text(t.logoutWipe),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// "Chiqish va o'chirish" — qaytarib bo'lmaydigan amal uchun ikkinchi tasdiq.
+  void _confirmWipe(BuildContext context, WidgetRef ref, L10n t) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+        title: Text(t.wipeTitle),
+        content: Text(t.wipeBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(t.cancel),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () {
               Navigator.of(ctx).pop();
-              ref.read(authDoneProvider.notifier).logout();
+              _wipeAllData(ref);
             },
-            child: Text(t.logout),
+            child: Text(t.wipeConfirm),
           ),
         ],
       ),
     );
+  }
+
+  /// Barcha lokal ma'lumotni (odatlar, tarix, suhbatlar, ism) tozalaydi va
+  /// kirish ekraniga qaytaradi.
+  void _wipeAllData(WidgetRef ref) {
+    ref.read(habitsProvider.notifier).clearAll();
+    ref.read(conversationsProvider.notifier).clearAll();
+    ref.read(userNameProvider.notifier).setName('');
+    ref.read(userEmojiProvider.notifier).setEmoji('✨');
+    ref.read(geminiKeyProvider.notifier).setKey('');
+    ref.read(authDoneProvider.notifier).logout();
   }
 
   void _editProfile(

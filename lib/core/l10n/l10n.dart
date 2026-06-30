@@ -164,6 +164,25 @@ class L10n {
   String streakDays(int n) =>
       _p('$n kunlik seriya', '$n-day streak', 'серия: $n дн.');
 
+  // ---------- Chiqish / ma'lumotni tozalash ----------
+  String get logoutChoose => _p(
+    "Kirish ekraniga qaytasiz. Ma'lumotlaringiz bilan nima qilamiz?",
+    'You will return to the welcome screen. What about your data?',
+    'Вы вернётесь на экран входа. Что делать с данными?',
+  );
+  String get logoutKeep =>
+      _p('Shunchaki chiqish', 'Just log out', 'Просто выйти');
+  String get logoutWipe =>
+      _p("Chiqish va o'chirish", 'Log out & erase', 'Выйти и стереть');
+  String get wipeTitle =>
+      _p("Hammasini o'chirish?", 'Erase everything?', 'Стереть всё?');
+  String get wipeBody => _p(
+    "Barcha odatlar, tarix, seriya va suhbatlar butunlay o'chadi. Buni qaytarib bo'lmaydi.",
+    'All habits, history, streaks and chats will be permanently deleted. This cannot be undone.',
+    'Все привычки, история, серии и чаты будут безвозвратно удалены. Это нельзя отменить.',
+  );
+  String get wipeConfirm => _p("Ha, o'chirish", 'Yes, erase', 'Да, стереть');
+
   // ---------- Profil ----------
   String get profileTitle => _p('Profil', 'Profile', 'Профиль');
   String get guest => _p('Mehmon', 'Guest', 'Гость');

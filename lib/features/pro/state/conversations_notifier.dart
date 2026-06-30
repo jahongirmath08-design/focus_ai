@@ -73,4 +73,10 @@ class ConversationsNotifier extends Notifier<List<Conversation>> {
     _box?.delete(id);
     state = state.where((c) => c.id != id).toList();
   }
+
+  /// Barcha suhbatlarni o'chiradi (ma'lumotni tozalashda).
+  void clearAll() {
+    _box?.clear();
+    state = const [];
+  }
 }

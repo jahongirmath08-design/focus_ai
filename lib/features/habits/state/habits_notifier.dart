@@ -151,6 +151,15 @@ class HabitsNotifier extends Notifier<List<Habit>> {
     _repo?.delete(id);
   }
 
+  /// Barcha odatlar va focus-tarixni o'chiradi (ma'lumotni tozalash).
+  void clearAll() {
+    try {
+      if (Hive.isBoxOpen('habits')) Hive.box('habits').clear();
+      if (Hive.isBoxOpen('history')) Hive.box('history').clear();
+    } catch (_) {}
+    state = [];
+  }
+
   void _update(String id, Habit Function(Habit) transform) {
     final next = <Habit>[];
     for (final h in state) {
