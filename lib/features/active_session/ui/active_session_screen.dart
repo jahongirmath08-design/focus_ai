@@ -90,14 +90,14 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     final now = DateTime.now();
     final elapsed = s.elapsedMs(now);
     final progress = s.progress(now);
-    final complete = s.isComplete(now);
+    final done = habit.finishedAtMs != null || s.isComplete(now);
     final running = s.isRunning;
 
-    // 100% ga yetganda bir marta haptic
-    if (complete && !_celebrated) {
+    // Maqsadga yetganda YOKI yakunlanganda bir marta haptic (tabrik).
+    if (done && !_celebrated) {
       _celebrated = true;
       HapticFeedback.heavyImpact();
-    } else if (!complete) {
+    } else if (!done) {
       _celebrated = false;
     }
 
@@ -132,13 +132,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                 flightShuttleBuilder: arcFlightShuttleBuilder(
                   progress: progress,
                   color: color,
-                  complete: complete,
+                  complete: done,
                 ),
                 child: LightArc(
                   progress: progress,
                   color: color,
                   running: running,
-                  complete: complete,
+                  complete: done,
                   size: 300,
                   center: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -153,7 +153,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        complete
+                        done
                             ? t.statusDone
                             : t.remaining(
                                 formatDuration(
@@ -162,8 +162,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                                 ),
                               ),
                         style: TextStyle(
-                          color: complete ? color : Colors.white54,
-                          fontWeight: complete
+                          color: done ? color : Colors.white54,
+                          fontWeight: done
                               ? FontWeight.w600
                               : FontWeight.w400,
                         ),
@@ -173,14 +173,17 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                 ),
               ),
               const SizedBox(height: 56),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   FilledButton.icon(
                     onPressed: () {
-                      if (complete) {
+                      if (done) {
                         HapticFeedback.lightImpact();
-                        notifier.reset(habit.id);
+                        notifier.reset(habit.id); // "Qaytadan" — boshidan
                       } else {
                         HapticFeedback.mediumImpact();
                         if (running) {
@@ -191,12 +194,17 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                       }
                     },
                     icon: Icon(
-                      complete
+                      done
                           ? Icons.refresh
                           : (running ? Icons.pause : Icons.play_arrow),
                     ),
+                    // Pauzadan keyin — "Davom etish" (TZ 3.5).
                     label: Text(
-                      complete ? t.restart : (running ? t.pause : t.start),
+                      done
+                          ? t.restart
+                          : (running
+                                ? t.pause
+                                : (s.accumulatedMs > 0 ? t.resume : t.start)),
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: color,
@@ -211,20 +219,33 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                       ),
                     ),
                   ),
-                  if (!complete) ...[
-                    const SizedBox(width: 16),
-                    OutlinedButton.icon(
+                  // TZ 3.5 — "Yakunlash": odatni BUGUN bajarilgan deb belgilaydi
+                  // (vaqt HALOL saqlanadi, oshmaydi), tabrik bilan qaytaradi.
+                  if (!done && (running || s.accumulatedMs > 0))
+                    FilledButton.icon(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
-                        notifier.reset(habit.id);
+                        HapticFeedback.heavyImpact(); // tabrik
+                        notifier.finish(habit.id);
+                        Navigator.of(context).pop();
                       },
-                      icon: const Icon(Icons.refresh),
-                      label: Text(t.resetShort),
+                      icon: const Icon(Icons.check_circle_rounded),
+                      label: Text(t.finish),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: color.withValues(alpha: 0.16),
+                        foregroundColor: color,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                  ],
                 ],
               ),
-              if (!complete) ...[
+              if (!done) ...[
                 const SizedBox(height: 28),
                 OutlinedButton.icon(
                   onPressed: _toggleDeepFocus,

@@ -10,6 +10,10 @@ class Habit {
   final String emoji; // ixtiyoriy belgi (bo'sh bo'lishi mumkin)
   final FocusSession session;
 
+  /// Foydalanuvchi "Yakunlash"ni bosgan vaqt (ms). null = yakunlanmagan.
+  /// Maqsadga yetmasa ham odatni "bugun bajarildi" deb belgilash uchun.
+  final int? finishedAtMs;
+
   const Habit({
     required this.id,
     required this.name,
@@ -17,6 +21,7 @@ class Habit {
     required this.createdAt,
     required this.session,
     this.emoji = '',
+    this.finishedAtMs,
   });
 
   Habit copyWith({
@@ -24,6 +29,8 @@ class Habit {
     int? colorValue,
     String? emoji,
     FocusSession? session,
+    int? finishedAtMs,
+    bool clearFinished = false,
   }) => Habit(
     id: id,
     name: name ?? this.name,
@@ -31,11 +38,22 @@ class Habit {
     createdAt: createdAt,
     emoji: emoji ?? this.emoji,
     session: session ?? this.session,
+    finishedAtMs: clearFinished ? null : (finishedAtMs ?? this.finishedAtMs),
   );
 
   Habit start(DateTime now) => copyWith(session: session.start(now));
   Habit pause(DateTime now) => copyWith(session: session.pause(now));
-  Habit reset() => copyWith(session: session.reset());
+  Habit reset() => copyWith(session: session.reset(), clearFinished: true);
+
+  /// "Yakunlash" — taymerni to'xtatadi (vaqt HALOL, oshmaydi) va odatni
+  /// bugun bajarilgan deb belgilaydi.
+  Habit finish(DateTime now) => copyWith(
+    session: session.pause(now),
+    finishedAtMs: now.millisecondsSinceEpoch,
+  );
+
+  /// Odat bugun "bajarilgan"mi? — qo'lda yakunlangan YOKI maqsadga yetgan.
+  bool isDone(DateTime now) => finishedAtMs != null || session.isComplete(now);
 
   Map<String, dynamic> toMap() => {
     'id': id,
@@ -46,6 +64,7 @@ class Habit {
     'accumulatedMs': session.accumulatedMs,
     'runningSinceMs': session.runningSince?.millisecondsSinceEpoch,
     'goalMs': session.goalMs,
+    'finishedAtMs': finishedAtMs,
   };
 
   factory Habit.fromMap(Map<String, dynamic> m) => Habit(
@@ -61,5 +80,6 @@ class Habit {
           : DateTime.fromMillisecondsSinceEpoch(m['runningSinceMs'] as int),
       goalMs: (m['goalMs'] as int?) ?? 0,
     ),
+    finishedAtMs: m['finishedAtMs'] as int?,
   );
 }

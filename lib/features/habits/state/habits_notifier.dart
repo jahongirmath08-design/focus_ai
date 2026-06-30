@@ -126,6 +126,14 @@ class HabitsNotifier extends Notifier<List<Habit>> {
     _update(id, (h) => h.reset());
   }
 
+  /// "Yakunlash" — ishlab turgan vaqtni tarixga yozadi, taymerni to'xtatadi va
+  /// odatni bugun bajarilgan deb belgilaydi (vaqt halol, oshmaydi).
+  void finish(String id) {
+    final now = DateTime.now();
+    _logRunning(id, now);
+    _update(id, (h) => h.finish(now));
+  }
+
   /// Ishlab turgan oraliqning hali yozilmagan qismini focus-tarixga yozadi.
   void _logRunning(String id, DateTime now) {
     final matches = state.where((h) => h.id == id);

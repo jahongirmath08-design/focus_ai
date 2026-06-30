@@ -154,9 +154,9 @@ class _DashboardHeader extends StatelessWidget {
       (s, h) => s + (h.session.elapsedMs(now) ~/ 1000) * 1000,
     );
     final active = habits
-        .where((h) => h.session.isRunning && !h.session.isComplete(now))
+        .where((h) => h.session.isRunning && !h.isDone(now))
         .length;
-    final done = habits.where((h) => h.session.isComplete(now)).length;
+    final done = habits.where((h) => h.isDone(now)).length;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
@@ -305,7 +305,7 @@ class _HabitCard extends StatelessWidget {
     final s = habit.session;
     final elapsed = s.elapsedMs(now);
     final progress = s.progress(now);
-    final complete = s.isComplete(now);
+    final done = habit.isDone(now);
     final running = s.isRunning;
 
     return Material(
@@ -328,14 +328,14 @@ class _HabitCard extends StatelessWidget {
                 flightShuttleBuilder: arcFlightShuttleBuilder(
                   progress: progress,
                   color: color,
-                  complete: complete,
+                  complete: done,
                 ),
                 child: MiniLightArc(
                   progress: progress,
                   color: color,
-                  complete: complete,
+                  complete: done,
                   size: 66,
-                  child: complete
+                  child: done
                       ? Icon(Icons.check_rounded, color: color, size: 24)
                       : Text(
                           '${(progress * 100).toStringAsFixed(0)}%',
@@ -403,7 +403,7 @@ class _HabitCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      complete
+                      done
                           ? t.statusDone
                           : running
                           ? t.statusRunning
@@ -411,7 +411,7 @@ class _HabitCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w500,
-                        color: complete || running
+                        color: done || running
                             ? color
                             : scheme.onSurfaceVariant,
                       ),
@@ -424,7 +424,7 @@ class _HabitCard extends StatelessWidget {
               SizedBox(
                 width: 50,
                 height: 50,
-                child: complete
+                child: done
                     ? FilledButton(
                         onPressed: onReset,
                         style: FilledButton.styleFrom(

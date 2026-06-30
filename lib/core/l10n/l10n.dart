@@ -122,6 +122,8 @@ class L10n {
   String get pause => _p('Pauza', 'Pause', 'Пауза');
   String get restart => _p('Qaytadan', 'Restart', 'Заново');
   String get resetShort => _p('Qayta', 'Reset', 'Сброс');
+  String get resume => _p('Davom etish', 'Resume', 'Продолжить');
+  String get finish => _p('Yakunlash', 'Finish', 'Завершить');
   String remaining(String time) =>
       _p('qoldi $time', '$time left', 'осталось $time');
   String get habitNotFound =>
