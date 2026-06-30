@@ -75,4 +75,89 @@ class HistoryRepository {
     }
     return seen.length;
   }
+
+  /// Faollik bo'lgan (diqqat > 0) barcha kunlarning dayKey to'plami.
+  Set<int> _activeDayKeys() {
+    final out = <int>{};
+    for (final key in _box.keys) {
+      final s = key.toString();
+      final sep = s.indexOf('|');
+      if (sep <= 0) continue;
+      final dk = int.tryParse(s.substring(0, sep));
+      if (dk == null) continue;
+      if (((_box.get(key) as int?) ?? 0) > 0) out.add(dk);
+    }
+    return out;
+  }
+
+  /// dayKey (YYYYMMDD) -> DateTime.
+  static DateTime dateFromKey(int dk) =>
+      DateTime(dk ~/ 10000, (dk % 10000) ~/ 100, dk % 100);
+
+  /// JORIY seriya — bugundan (yoki bugun hali bo'sh bo'lsa kechadan) orqaga qarab
+  /// uzluksiz faol kunlar soni. [todayActive] — bugun hozir ish bo'layotgani.
+  int currentStreak({bool todayActive = false}) {
+    final active = _activeDayKeys();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final todayKey = dayKey(today);
+    bool isActive(DateTime d) =>
+        (dayKey(d) == todayKey && todayActive) || active.contains(dayKey(d));
+
+    var day = today;
+    if (!isActive(day)) {
+      // bugun hali bo'sh — seriya kechagacha hisoblanadi (bugun uzilmaydi).
+      day = day.subtract(const Duration(days: 1));
+    }
+    var streak = 0;
+    while (isActive(day)) {
+      streak++;
+      day = day.subtract(const Duration(days: 1));
+    }
+    return streak;
+  }
+
+  /// ENG UZUN seriya — barcha tarix bo'yicha eng uzun uzluksiz faol kunlar.
+  int longestStreak({bool todayActive = false}) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final days = _activeDayKeys().map(dateFromKey).toList();
+    if (todayActive && !days.contains(today)) days.add(today);
+    if (days.isEmpty) return 0;
+    days.sort();
+    var longest = 1;
+    var run = 1;
+    for (var i = 1; i < days.length; i++) {
+      final diff = days[i].difference(days[i - 1]).inDays;
+      if (diff == 1) {
+        run++;
+        if (run > longest) longest = run;
+      } else if (diff > 1) {
+        run = 1;
+      }
+    }
+    return longest;
+  }
+
+  /// Heatmap uchun: oxirgi [days] kun bo'yicha dayKey -> jami soniya.
+  Map<int, int> dailyTotalsLastDays(int days) {
+    final now = DateTime.now();
+    final from = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: days - 1));
+    final fromKey = dayKey(from);
+    final toKey = dayKey(now);
+    final out = <int, int>{};
+    for (final key in _box.keys) {
+      final s = key.toString();
+      final sep = s.indexOf('|');
+      if (sep <= 0) continue;
+      final dk = int.tryParse(s.substring(0, sep));
+      if (dk == null || dk < fromKey || dk > toKey) continue;
+      out[dk] = (out[dk] ?? 0) + ((_box.get(key) as int?) ?? 0);
+    }
+    return out;
+  }
 }

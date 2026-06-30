@@ -154,6 +154,16 @@ class L10n {
   String get periodMonth => _p('Oylik', 'Monthly', 'Месяц');
   String get periodYear => _p('Yillik', 'Yearly', 'Год');
 
+  // ---------- Seriya (streak) ----------
+  String get currentStreak =>
+      _p('Joriy seriya', 'Current streak', 'Текущая серия');
+  String get longestStreak => _p('Eng uzun', 'Longest', 'Самая длинная');
+  String get activityMap =>
+      _p('Faollik xaritasi', 'Activity map', 'Карта активности');
+  String daysUnit(int n) => _p('$n kun', '$n days', '$n дн.');
+  String streakDays(int n) =>
+      _p('$n kunlik seriya', '$n-day streak', 'серия: $n дн.');
+
   // ---------- Profil ----------
   String get profileTitle => _p('Profil', 'Profile', 'Профиль');
   String get guest => _p('Mehmon', 'Guest', 'Гость');

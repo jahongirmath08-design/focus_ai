@@ -50,6 +50,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final t = ref.watch(l10nProvider);
     final userName = ref.watch(userNameProvider);
     final userEmoji = ref.watch(userEmojiProvider);
+    final history = ref.watch(historyProvider);
+    final streak =
+        history?.currentStreak(
+          todayActive: habits.any((h) => h.session.isRunning),
+        ) ??
+        0;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -64,6 +70,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               t: t,
               userName: userName,
               userEmoji: userEmoji,
+              streak: streak,
             ),
             Expanded(
               child: habits.isEmpty
@@ -137,6 +144,7 @@ class _DashboardHeader extends StatelessWidget {
     required this.t,
     required this.userName,
     required this.userEmoji,
+    required this.streak,
   });
 
   final List<Habit> habits;
@@ -144,6 +152,7 @@ class _DashboardHeader extends StatelessWidget {
   final L10n t;
   final String userName;
   final String userEmoji;
+  final int streak;
 
   @override
   Widget build(BuildContext context) {
@@ -172,6 +181,33 @@ class _DashboardHeader extends StatelessWidget {
             t.longDate(now),
             style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
           ),
+          if (streak > 0) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF7043).withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFFFF7043).withValues(alpha: 0.4),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🔥', style: TextStyle(fontSize: 15)),
+                  const SizedBox(width: 6),
+                  Text(
+                    t.streakDays(streak),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           Row(
             children: [

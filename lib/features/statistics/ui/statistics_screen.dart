@@ -9,6 +9,7 @@ import '../../../core/state/app_settings.dart';
 import '../../../core/utils/duration_format.dart';
 import '../../habits/domain/habit.dart';
 import '../../habits/state/habits_notifier.dart';
+import '../../history/data/history_repository.dart';
 
 /// Statistika — davr tanlagich (Kunlik/Haftalik/Oylik/Yillik) + diqqat taqsimoti
 /// donut + odatlar bo'yicha bar. Ma'lumot focus-tarixdan (Hive 'history').
@@ -44,6 +45,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     final habits = ref.watch(habitsProvider);
     final history = ref.watch(historyProvider);
     final now = DateTime.now();
+    final todayActive = habits.any((h) => h.session.isRunning);
 
     // Tanlangan davr bo'yicha har odat uchun diqqat (soniya).
     final base = history?.focusByHabitLastDays(_periodDays) ?? <String, int>{};
@@ -80,6 +82,12 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
+                _StreakHeatmap(
+                  history: history,
+                  t: t,
+                  todayActive: todayActive,
+                ),
+                const SizedBox(height: 20),
                 _PeriodSelector(
                   days: _periodDays,
                   onChanged: (d) => setState(() => _periodDays = d),
@@ -343,6 +351,150 @@ class _HabitBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Seriya (streak) + faollik xaritasi — GitHub uslubidagi heatmap.
+/// Har bir katak — bir kun; rang quyuqligi o'sha kungi diqqat miqdoriga bog'liq.
+class _StreakHeatmap extends StatelessWidget {
+  const _StreakHeatmap({
+    required this.history,
+    required this.t,
+    required this.todayActive,
+  });
+
+  final HistoryRepository? history;
+  final L10n t;
+  final bool todayActive;
+
+  static const int _weeks = 14;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final cur = history?.currentStreak(todayActive: todayActive) ?? 0;
+    final longest = history?.longestStreak(todayActive: todayActive) ?? 0;
+    final totals = history?.dailyTotalsLastDays(_weeks * 7) ?? <int, int>{};
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // Dushanbaga tekislangan boshlanish (_weeks hafta oldin).
+    var start = today.subtract(const Duration(days: _weeks * 7 - 1));
+    start = start.subtract(Duration(days: start.weekday - 1));
+    final numWeeks = (today.difference(start).inDays / 7).ceil() + 1;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🔥', style: TextStyle(fontSize: 26)),
+              const SizedBox(width: 8),
+              Text(
+                '$cur',
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  t.currentStreak,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${t.longestStreak}: $longest',
+                style: TextStyle(fontSize: 12.5, color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            t.activityMap.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11,
+              letterSpacing: 1.1,
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            reverse: true,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var w = 0; w < numWeeks; w++)
+                  Column(
+                    children: [
+                      for (var d = 0; d < 7; d++)
+                        _cell(
+                          context,
+                          start.add(Duration(days: w * 7 + d)),
+                          today,
+                          totals,
+                        ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _cell(
+    BuildContext context,
+    DateTime date,
+    DateTime today,
+    Map<int, int> totals,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    const size = 13.0;
+    if (date.isAfter(today)) {
+      return const SizedBox(width: 17, height: 17);
+    }
+    final secs = totals[HistoryRepository.dayKey(date)] ?? 0;
+    final mins = secs / 60.0;
+    final Color color;
+    if (secs <= 0) {
+      color = scheme.surfaceContainerHighest.withValues(alpha: 0.5);
+    } else {
+      final a = mins >= 60
+          ? 1.0
+          : mins >= 30
+          ? 0.78
+          : mins >= 10
+          ? 0.56
+          : 0.34;
+      color = scheme.primary.withValues(alpha: a);
+    }
+    return Container(
+      width: size,
+      height: size,
+      margin: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(3),
       ),
     );
   }
