@@ -258,6 +258,87 @@ class L10n {
     'Вернуться к экрану входа',
   );
 
+  // ---------- Hisob (real ro'yxatdan o'tish) ----------
+  String get authTabGuest => _p('Mehmon', 'Guest', 'Гость');
+  String get authTabAccount => _p('Hisob', 'Account', 'Аккаунт');
+  String get authEmail => _p('Email', 'Email', 'Email');
+  String get authPassword => _p('Parol', 'Password', 'Пароль');
+  String get authPasswordHint =>
+      _p('Kamida 6 belgi', 'At least 6 characters', 'Минимум 6 символов');
+  String get authSignUp => _p("Ro'yxatdan o'tish", 'Sign up', 'Регистрация');
+  String get authSignIn => _p('Kirish', 'Sign in', 'Вход');
+  String get authToSignIn => _p(
+    'Hisobingiz bormi? Kiring',
+    'Have an account? Sign in',
+    'Есть аккаунт? Войти',
+  );
+  String get authToSignUp => _p(
+    "Hisob yo'qmi? Ro'yxatdan o'ting",
+    'No account? Sign up',
+    'Нет аккаунта? Регистрация',
+  );
+  String get authForgot =>
+      _p('Parolni unutdingizmi?', 'Forgot password?', 'Забыли пароль?');
+  String get authSecurityQuestion =>
+      _p('Xavfsizlik savoli', 'Security question', 'Секретный вопрос');
+  String get authSecurityQuestionHint => _p(
+    'Masalan: birinchi maktabingiz?',
+    'e.g. your first school?',
+    'Напр.: ваша первая школа?',
+  );
+  String get authSecurityAnswer => _p('Javob', 'Answer', 'Ответ');
+  String get authNewPassword =>
+      _p('Yangi parol', 'New password', 'Новый пароль');
+  String get authReset =>
+      _p('Parolni tiklash', 'Reset password', 'Сбросить пароль');
+  String get authResetDone => _p(
+    'Parol yangilandi. Endi kiring.',
+    'Password updated. Please sign in.',
+    'Пароль обновлён. Войдите.',
+  );
+  String get authAccountNote => _p(
+    'Hisob shu qurilmada xavfsiz saqlanadi. Parol ochiq saqlanmaydi.',
+    'Your account is stored securely on this device. Passwords are never stored in plain text.',
+    'Аккаунт хранится безопасно на этом устройстве. Пароль не хранится в открытом виде.',
+  );
+  String get authOptionalName =>
+      _p('Ism (ixtiyoriy)', 'Name (optional)', 'Имя (необязательно)');
+  // Auth xatolari (kod -> matn)
+  String get errInvalidEmail => _p(
+    "Email formati noto'g'ri",
+    'Invalid email format',
+    'Неверный формат email',
+  );
+  String get errWeakPassword => _p(
+    "Parol kamida 6 belgidan iborat bo'lsin",
+    'Password must be at least 6 characters',
+    'Пароль должен быть не короче 6 символов',
+  );
+  String get errEmptyField =>
+      _p("Maydonni to'ldiring", 'Please fill this field', 'Заполните поле');
+  String get errEmailTaken => _p(
+    "Bu email allaqachon ro'yxatdan o'tgan",
+    'This email is already registered',
+    'Этот email уже зарегистрирован',
+  );
+  String get errAccountNotFound => _p(
+    'Bunday email topilmadi',
+    'No account with this email',
+    'Аккаунт с таким email не найден',
+  );
+  String get errWrongPassword => _p(
+    "Email yoki parol noto'g'ri",
+    'Wrong email or password',
+    'Неверный email или пароль',
+  );
+  String get errWrongAnswer =>
+      _p("Javob noto'g'ri", 'Wrong answer', 'Неверный ответ');
+  String get errGeneric => _p(
+    'Nimadir xato ketdi. Qayta urining.',
+    'Something went wrong. Try again.',
+    'Что-то пошло не так. Попробуйте снова.',
+  );
+
   // ---------- Onboarding ----------
   String get onbSkip => _p("O'tkazib yuborish", 'Skip', 'Пропустить');
   String get onbNext => _p('Keyingi', 'Next', 'Далее');

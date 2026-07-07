@@ -66,5 +66,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ovozli kiritish uchun mikrofon kerak.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Ovozingizni matnga aylantirish uchun kerak.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AI murabbiyga rasm yuborish uchun galereya kerak.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>AI murabbiyga suratga olib yuborish uchun kamera kerak.</string>
 </dict>
 </plist>

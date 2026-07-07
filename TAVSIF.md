@@ -28,7 +28,7 @@ Har bir sahifa o'zbek hunarmandchiligidan ilhomlangan geometrik naqsh bilan beza
 
 ## Yana
 
-**Yorug' va tungi mavzu** (almashtiriladi), uch til (o'zbek, ingliz, rus), mehmon rejimi (ro'yxatdan o'tish shart emas), emoji-avatar, ichki o'rnatilgan Space Grotesk shrifti hamda ma'lumot nazorati (chiqishda ma'lumotni saqlash yoki butunlay tozalash) — hammasi internetsiz ishlaydi.
+**Yorug' va tungi mavzu** (almashtiriladi), uch til (o'zbek, ingliz, rus), **ixtiyoriy hisob** (email/parol bilan haqiqiy ro'yxatdan o'tish — ammo lokal, serversiz) yoki mehmon rejimi, emoji-avatar, ichki o'rnatilgan Space Grotesk shrifti hamda ma'lumot nazorati (chiqishda ma'lumotni saqlash yoki butunlay tozalash) — hammasi internetsiz ishlaydi.
 
 ---
 

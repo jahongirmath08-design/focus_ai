@@ -26,7 +26,7 @@ ilovaning **joni**, va aynan shu bizni har qanday shablon kuzatuvchidan ajratadi
 - **Shaxsiylashtirish** — ism + emoji avatar, har odatga emoji, 12 rang, qo'lda vaqt kiritish.
 - **Timestamp-aniq taymer** — kill/restore'da vaqt yo'qolmaydi; maqsadga **avtomatik to'xtaydi** (oshmaydi).
 - **Premium tipografiya** (Space Grotesk) + brendlangan yuklanish ekrani va **ilova belgisi**.
-- **Lokal-first / mehmon rejimi** — ro'yxatdan o'tish shart emas, hammasi qurilmada (Hive).
+- **Ixtiyoriy hisob + mehmon rejimi** — email/parol bilan **haqiqiy ro'yxatdan o'tish** (lokal; parol salt + cho'zilgan hash bilan, ochiq saqlanmaydi) YOKI bir bosishda mehmon. Hammasi qurilmada (Hive), **server yo'q**.
 - **AI murabbiy (Pro)** — **oflayn** tahlil + **onlayn Google Gemini** suhbati, **rasm tahlili** (multimodal), **ovozli kiritish** va suhbat tarixi. Kalit foydalanuvchida (BYOK).
 - **Seriya 🔥 + faollik xaritasi** — ketma-ket kunlar va GitHub uslubidagi heatmap.
 - **Yakunlash** — odatni bugun bajarilgan deb belgilaydi; vaqt **halol** qoladi.
@@ -61,13 +61,13 @@ lib/
     dashboard/      Bugun ekrani + odat qo'shish
     active_session/ immersiv sessiya + light_arc (signature)
     onboarding/     3 sahifali tanishtiruv
-    auth/           kirish (mehmon rejimi)
+    auth/           kirish — ixtiyoriy hisob + mehmon (validator, account_store)
     home/           pastki navigatsiya (Bugun/Statistika/Pro/Profil)
     statistics/     donut + streak + heatmap
     pro/            AI murabbiy (oflayn + Gemini, rasm, ovoz)
     profile/        til + mavzu + ism + emoji
     history/        focus-tarix (streak, heatmap, davrlar)
-test/             focus_session, habit, widget testlari
+test/             focus_session, habit, auth_validator, widget testlari
 ```
 
 **Muqaddas taymer qoidasi:**
@@ -78,7 +78,7 @@ Manfiy yo'q · maqsaddan oshmaydi · kill/restore'da timestamp'dan tiklanadi · 
 
 ## Texnologiyalar
 
-Flutter 3.44 / Dart 3.12 · Riverpod · Hive CE · fl_chart · sensors_plus · speech_to_text · image_picker · Google Gemini API. Shrift (Space Grotesk) ilova ichiga joylangan — internetsiz ham to'g'ri chiqadi.
+Flutter 3.44 / Dart 3.12 · Riverpod · Hive CE · fl_chart · sensors_plus · speech_to_text · image_picker · crypto · Google Gemini API. Shrift (Space Grotesk) ilova ichiga joylangan — internetsiz ham to'g'ri chiqadi.
 
 ## Ishga tushirish
 
@@ -98,7 +98,7 @@ Oflayn murabbiy **kalitsiz** ishlaydi. Onlayn (Gemini) suhbat uchun:
 
 ## Maxfiylik
 
-Hamma ma'lumot **shu qurilmada** saqlanadi (Hive). Server yo'q, hisob yo'q, kuzatuv yo'q.
+Hamma ma'lumot **shu qurilmada** saqlanadi (Hive). **Server yo'q** — hisob ochsangiz ham u faqat qurilmada saqlanadi (parol hech qachon ochiq emas: salt + cho'zilgan hash). Kuzatuv yo'q.
 
 ---
 

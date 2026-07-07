@@ -1,0 +1,38 @@
+# Codemagic — Focus AI iOS bulutli build (Mac talab qilinmaydi).
+# To'liq yo'riqnoma: IOS_BUILD.md
+#
+# BEPUL yo'l: iOS SIMULATOR build — Apple Developer hisobisiz, imzosiz.
+# TZ 8-bo'lim "simulator build"ni qabul qiladi.
+workflows:
+  ios-simulator-focus-ai:
+    name: Focus AI — iOS Simulator (BEPUL, imzosiz)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: stable          # kerak bo'lsa loyiha versiyasiga (3.44.x) qadang
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Flutter paketlar
+        script: flutter pub get
+      - name: CocoaPods
+        script: cd ios && pod install
+      - name: Analyze (tez tekshiruv)
+        script: flutter analyze
+      - name: iOS SIMULATOR build (Apple hisob KERAK EMAS, imzosiz)
+        script: flutter build ios --simulator
+      - name: Runner.app'ni ziplab artefakt qilamiz
+        script: |
+          cd build/ios/iphonesimulator
+          zip -r Runner-simulator.app.zip Runner.app
+    artifacts:
+      - build/ios/iphonesimulator/Runner-simulator.app.zip
+
+  # --- TestFlight (haqiqiy iPhone) — Apple Developer $99/YIL (faqat yillik) ---
+  # Hozircha YOQILMAGAN: $99 to'lov hal bo'lgach IOS_BUILD.md bo'yicha to'ldiriladi.
+  # ios-testflight-focus-ai:
+  #   scripts:
+  #     - flutter build ipa --release
+  #   publishing:
+  #     app_store_connect:
+  #       auth: integration

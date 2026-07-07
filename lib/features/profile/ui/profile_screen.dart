@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/state/app_settings.dart';
+import '../../auth/state/account.dart';
 import '../../habits/state/habits_notifier.dart';
 import '../../onboarding/ui/onboarding_screen.dart';
 import '../../pro/state/conversations_notifier.dart';
@@ -24,7 +25,10 @@ class ProfileScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final userName = ref.watch(userNameProvider);
     final emoji = ref.watch(userEmojiProvider);
-    final displayName = userName.trim().isEmpty ? t.guest : userName.trim();
+    final account = ref.watch(accountProvider);
+    final displayName = userName.trim().isNotEmpty
+        ? userName.trim()
+        : (account != null ? account.email.split('@').first : t.guest);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -55,7 +59,7 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      t.localMode,
+                      account != null ? account.email : t.localMode,
                       style: TextStyle(
                         color: scheme.onSurfaceVariant,
                         fontSize: 13,
@@ -210,6 +214,7 @@ class ProfileScreen extends ConsumerWidget {
   void _wipeAllData(WidgetRef ref) {
     ref.read(habitsProvider.notifier).clearAll();
     ref.read(conversationsProvider.notifier).clearAll();
+    ref.read(sessionControllerProvider).wipeAccounts();
     ref.read(userNameProvider.notifier).setName('');
     ref.read(userEmojiProvider.notifier).setEmoji('✨');
     ref.read(geminiKeyProvider.notifier).setKey('');
